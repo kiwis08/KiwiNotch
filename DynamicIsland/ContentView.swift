@@ -19,7 +19,9 @@ struct ContentView: View {
 
     @ObservedObject var coordinator = DynamicIslandViewCoordinator.shared
     @ObservedObject var musicManager = MusicManager.shared
+    @ObservedObject var timerManager = TimerManager.shared
     @ObservedObject var batteryModel = BatteryStatusViewModel.shared
+    
 
     @State private var isHovering: Bool = false
     @State private var hoverWorkItem: DispatchWorkItem?
@@ -212,6 +214,8 @@ struct ContentView: View {
                               .transition(.opacity)
                       } else if (!coordinator.expandingView.show || coordinator.expandingView.type == .music) && vm.notchState == .closed && (musicManager.isPlaying || !musicManager.isPlayerIdle) && coordinator.musicLiveActivityEnabled && !vm.hideOnClosed {
                           MusicLiveActivity()
+                      } else if (!coordinator.expandingView.show || coordinator.expandingView.type == .timer) && vm.notchState == .closed && timerManager.isTimerActive && coordinator.timerLiveActivityEnabled && !vm.hideOnClosed {
+                          TimerLiveActivity()
                       } else if !coordinator.expandingView.show && vm.notchState == .closed && (!musicManager.isPlaying && musicManager.isPlayerIdle) && Defaults[.showNotHumanFace] && !vm.hideOnClosed  {
                           DynamicIslandFaceAnimation().animation(.interactiveSpring, value: musicManager.isPlayerIdle)
                       } else if vm.notchState == .open {
@@ -224,7 +228,7 @@ struct ContentView: View {
                        }
                       
                       if coordinator.sneakPeek.show {
-                          if (coordinator.sneakPeek.type != .music) && (coordinator.sneakPeek.type != .battery) && !Defaults[.inlineHUD] {
+                          if (coordinator.sneakPeek.type != .music) && (coordinator.sneakPeek.type != .battery) && (coordinator.sneakPeek.type != .timer) && !Defaults[.inlineHUD] {
                               SystemEventIndicatorModifier(eventType: $coordinator.sneakPeek.type, value: $coordinator.sneakPeek.value, icon: $coordinator.sneakPeek.icon, sendEventBack: { _ in
                                   //
                               })
@@ -245,10 +249,23 @@ struct ContentView: View {
                                   .padding(.bottom, 10)
                               }
                           }
+                          // Timer sneak peek
+                          else if coordinator.sneakPeek.type == .timer {
+                              if !vm.hideOnClosed && Defaults[.sneakPeekStyles] == .standard {
+                                  HStack(alignment: .center) {
+                                      Image(systemName: "timer")
+                                      GeometryReader { geo in
+                                          MarqueeText(.constant(timerManager.timerName + " - " + timerManager.formattedRemainingTime()), textColor: timerManager.timerColor, minDuration: 1, frameWidth: geo.size.width)
+                                      }
+                                  }
+                                  .foregroundStyle(timerManager.timerColor)
+                                  .padding(.bottom, 10)
+                              }
+                          }
                       }
                   }
               }
-              .conditionalModifier((coordinator.sneakPeek.show && (coordinator.sneakPeek.type == .music) && vm.notchState == .closed && !vm.hideOnClosed && Defaults[.sneakPeekStyles] == .standard) || (coordinator.sneakPeek.show && (coordinator.sneakPeek.type != .music) && (vm.notchState == .closed))) { view in
+              .conditionalModifier((coordinator.sneakPeek.show && coordinator.sneakPeek.type == .music && vm.notchState == .closed && !vm.hideOnClosed && Defaults[.sneakPeekStyles] == .standard) || (coordinator.sneakPeek.show && coordinator.sneakPeek.type == .timer && !vm.hideOnClosed && Defaults[.sneakPeekStyles] == .standard) || (coordinator.sneakPeek.show && (coordinator.sneakPeek.type != .music && coordinator.sneakPeek.type != .timer) && (vm.notchState == .closed))) { view in
                   view
                       .fixedSize()
               }
@@ -261,6 +278,8 @@ struct ContentView: View {
                               NotchHomeView(albumArtNamespace: albumArtNamespace)
                           case .shelf:
                               NotchShelfView()
+                          case .timer:
+                              NotchTimerView()
                       }
                   }
               }
@@ -323,10 +342,25 @@ struct ContentView: View {
                                 .truncationMode(.tail)
                                 .foregroundStyle(Defaults[.coloredSpectrogram] ? Color(nsColor: musicManager.avgColor) : Color.gray)
                                 .opacity((coordinator.expandingView.show && coordinator.expandingView.type == .music && Defaults[.enableSneakPeek] && Defaults[.sneakPeekStyles] == .inline) ? 1 : 0)
+                        } else if(coordinator.expandingView.show && coordinator.expandingView.type == .timer) {
+                            MarqueeText(
+                                .constant(timerManager.timerName),
+                                textColor: timerManager.timerColor,
+                                minDuration: 0.4,
+                                frameWidth: 100
+                            )
+                            .opacity((coordinator.expandingView.show && Defaults[.enableSneakPeek] && Defaults[.sneakPeekStyles] == .inline) ? 1 : 0)
+                            Spacer(minLength: vm.closedNotchSize.width)
+                            // Timer Status
+                            Text(timerManager.formattedRemainingTime())
+                                .lineLimit(1)
+                                .truncationMode(.tail)
+                                .foregroundStyle(timerManager.timerColor)
+                                .opacity((coordinator.expandingView.show && coordinator.expandingView.type == .timer && Defaults[.enableSneakPeek] && Defaults[.sneakPeekStyles] == .inline) ? 1 : 0)
                         }
                     }
                 )
-                .frame(width: (coordinator.expandingView.show && coordinator.expandingView.type == .music && Defaults[.enableSneakPeek] && Defaults[.sneakPeekStyles] == .inline) ? 380 : vm.closedNotchSize.width + (isHovering ? 8 : 0))
+                .frame(width: (coordinator.expandingView.show && (coordinator.expandingView.type == .music || coordinator.expandingView.type == .timer) && Defaults[.enableSneakPeek] && Defaults[.sneakPeekStyles] == .inline) ? 380 : vm.closedNotchSize.width + (isHovering ? 8 : 0))
             
 
             HStack {
@@ -380,6 +414,11 @@ struct ContentView: View {
     }
 
     private func doOpen() {
+        // Switch to timer tab if timer is active
+        if timerManager.isTimerActive {
+            coordinator.currentView = .timer
+        }
+        
         withAnimation(.bouncy.speed(1.2)) {
             vm.open()
         }

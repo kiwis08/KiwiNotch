@@ -490,8 +490,31 @@ struct Media: View {
             Section {
                 Toggle(
                     "Enable music live activity",
-                    isOn: $coordinator.musicLiveActivityEnabled.animation()
+                    isOn: $coordinator.musicLiveActivityEnabled
                 )
+                .animation(.easeInOut, value: coordinator.musicLiveActivityEnabled)
+                
+                Toggle(
+                    "Enable timer live activity",
+                    isOn: $coordinator.timerLiveActivityEnabled
+                )
+                .animation(.easeInOut, value: coordinator.timerLiveActivityEnabled)
+                
+                // Demo timer button
+                HStack {
+                    Button("Start 5-min Demo Timer") {
+                        TimerManager.shared.startDemoTimer(duration: 300)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    
+                    Spacer()
+                    
+                    Button("Stop Timer") {
+                        TimerManager.shared.stopTimer()
+                    }
+                    .buttonStyle(.bordered)
+                }
+                
                 Toggle("Enable sneak peek", isOn: $enableSneakPeek)
                 Picker("Sneak Peek Style", selection: $sneakPeekStyles){
                     ForEach(SneakPeekStyle.allCases) { style in
@@ -1104,6 +1127,16 @@ struct Shortcuts: View {
             }
             Section {
                 KeyboardShortcuts.Recorder("Toggle Notch Open:", name: .toggleNotchOpen)
+            }
+            Section {
+                KeyboardShortcuts.Recorder("Start Demo Timer:", name: .startDemoTimer)
+            } header: {
+                Text("Timer")
+            } footer: {
+                Text("Starts a 5-minute demo timer to test the timer live activity feature.")
+                    .multilineTextAlignment(.trailing)
+                    .foregroundStyle(.secondary)
+                    .font(.caption)
             }
         }
         .navigationTitle("Shortcuts")

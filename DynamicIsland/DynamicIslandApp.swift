@@ -262,6 +262,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             }
         }
         
+        KeyboardShortcuts.onKeyDown(for: .startDemoTimer) { [weak self] in
+            guard let self = self else { return }
+            // Start a 5-minute demo timer
+            TimerManager.shared.startDemoTimer(duration: 300)
+        }
+        
         if !Defaults[.showOnAllDisplays] {
             let viewModel = self.vm
             let window = createDynamicIslandWindow(

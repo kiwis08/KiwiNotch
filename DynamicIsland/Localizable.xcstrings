@@ -80,6 +80,9 @@
     "Activation" : {
 
     },
+    "Active" : {
+
+    },
     "Add" : {
 
     },
@@ -284,6 +287,9 @@
     "Default" : {
 
     },
+    "Demo (10s)" : {
+
+    },
     "Description" : {
 
     },
@@ -376,6 +382,9 @@
 
     },
     "Enable sneak peek" : {
+
+    },
+    "Enable timer live activity" : {
 
     },
     "Enhance your experience with HUDs" : {
@@ -569,6 +578,9 @@
     "Mic %@" : {
 
     },
+    "min" : {
+
+    },
     "Minimum hover duration" : {
 
     },
@@ -666,6 +678,12 @@
     "Open System Settings" : {
 
     },
+    "Pause" : {
+
+    },
+    "Paused" : {
+
+    },
     "Percentage" : {
       "localizations" : {
         "en" : {
@@ -733,6 +751,9 @@
 
     },
     "Restart Dynamic Island" : {
+
+    },
+    "Resume" : {
 
     },
     "Running" : {
@@ -855,6 +876,21 @@
     "Square" : {
 
     },
+    "Start 5-min Demo Timer" : {
+
+    },
+    "Start Demo Timer:" : {
+
+    },
+    "Starts a 5-minute demo timer to test the timer live activity feature." : {
+
+    },
+    "Stop" : {
+
+    },
+    "Stop Timer" : {
+
+    },
     "Stopped" : {
 
     },
@@ -875,6 +911,9 @@
 
     },
     "Time to Full Charge: %lld min" : {
+
+    },
+    "Timer" : {
 
     },
     "Toggle Notch Open:" : {
