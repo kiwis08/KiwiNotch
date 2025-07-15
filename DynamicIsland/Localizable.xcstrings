@@ -242,6 +242,12 @@
     "Circle" : {
 
     },
+    "Clear" : {
+
+    },
+    "Clear Data" : {
+
+    },
     "Close" : {
 
     },
@@ -256,6 +262,12 @@
       }
     },
     "Continue" : {
+
+    },
+    "Controls" : {
+
+    },
+    "CPU Usage" : {
 
     },
     "Custom color" : {
@@ -384,6 +396,9 @@
     "Enable sneak peek" : {
 
     },
+    "Enable stats monitoring in Settings to view system performance data." : {
+
+    },
     "Enable timer live activity" : {
 
     },
@@ -447,6 +462,9 @@
     "Got it!" : {
 
     },
+    "GPU Usage" : {
+
+    },
     "Gradient" : {
 
     },
@@ -491,10 +509,16 @@
     "Installed extensions" : {
 
     },
+    "Last Updated" : {
+
+    },
     "Later" : {
 
     },
     "License key" : {
+
+    },
+    "Live" : {
 
     },
     "Lottie JSON URL" : {
@@ -564,6 +588,9 @@
     "Medium" : {
 
     },
+    "Memory Usage" : {
+
+    },
     "Menubar icon" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -588,6 +615,9 @@
 
     },
     "Mirror shape" : {
+
+    },
+    "Monitoring Status" : {
 
     },
     "More" : {
@@ -647,6 +677,9 @@
 
     },
     "Notch Height" : {
+
+    },
+    "Off" : {
 
     },
     "OK" : {
@@ -876,16 +909,31 @@
     "Square" : {
 
     },
+    "Start" : {
+
+    },
     "Start 5-min Demo Timer" : {
 
     },
     "Start Demo Timer:" : {
 
     },
+    "Start Monitoring" : {
+
+    },
     "Starts a 5-minute demo timer to test the timer live activity feature." : {
 
     },
+    "Stats" : {
+
+    },
+    "Stats Disabled" : {
+
+    },
     "Stop" : {
+
+    },
+    "Stop Monitoring" : {
 
     },
     "Stop Timer" : {
@@ -905,6 +953,9 @@
       }
     },
     "System features" : {
+
+    },
+    "System Performance" : {
 
     },
     "TheDynamicIsland" : {
@@ -970,6 +1021,9 @@
 
     },
     "What's New" : {
+
+    },
+    "When enabled, the Stats tab will display real-time CPU, Memory, and GPU usage graphs. This feature requires system permissions and may use additional battery." : {
 
     },
     "You can now enjoy the app. If you want to tweak things further, you can always visit the settings." : {

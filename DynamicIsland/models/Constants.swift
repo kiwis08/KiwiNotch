@@ -154,6 +154,9 @@ extension Defaults.Keys {
     // MARK: Media Controller
     static let mediaController = Key<MediaControllerType>("mediaController", default: defaultMediaController)
     
+    // MARK: Stats Feature
+    static let enableStatsFeature = Key<Bool>("enableStatsFeature", default: false)
+    
     // Helper to determine the default media controller based on macOS version
     static var defaultMediaController: MediaControllerType {
         if #available(macOS 15.4, *) {

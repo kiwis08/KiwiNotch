@@ -280,6 +280,8 @@ struct ContentView: View {
                               NotchShelfView()
                           case .timer:
                               NotchTimerView()
+                          case .stats:
+                              NotchStatsView()
                       }
                   }
               }
