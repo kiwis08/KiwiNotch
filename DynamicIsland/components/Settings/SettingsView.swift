@@ -60,6 +60,9 @@ struct SettingsView: View {
                 NavigationLink(value: "Shelf") {
                     Label("Shelf", systemImage: "books.vertical")
                 }
+                NavigationLink(value: "Stats") {
+                    Label("Stats", systemImage: "chart.line.uptrend.xyaxis")
+                }
                 NavigationLink(value: "Shortcuts") {
                     Label("Shortcuts", systemImage: "keyboard")
                 }
@@ -92,6 +95,8 @@ struct SettingsView: View {
                     Downloads()
                 case "Shelf":
                     Shelf()
+                case "Stats":
+                    Stats()
                 case "Shortcuts":
                     Shortcuts()
                 case "Extensions":
@@ -1140,6 +1145,112 @@ struct Shortcuts: View {
             }
         }
         .navigationTitle("Shortcuts")
+    }
+}
+
+struct Stats: View {
+    @ObservedObject var statsManager = StatsManager.shared
+    @Default(.enableStatsFeature) var enableStatsFeature
+    
+    var body: some View {
+        Form {
+            Section {
+                Defaults.Toggle("Enable system stats monitoring", key: .enableStatsFeature)
+                    .onChange(of: enableStatsFeature) { _, newValue in
+                        if newValue {
+                            statsManager.startMonitoring()
+                        } else {
+                            statsManager.stopMonitoring()
+                        }
+                    }
+            } header: {
+                Text("General")
+            } footer: {
+                Text("When enabled, the Stats tab will display real-time CPU, Memory, and GPU usage graphs. This feature requires system permissions and may use additional battery.")
+                    .multilineTextAlignment(.trailing)
+                    .foregroundStyle(.secondary)
+                    .font(.caption)
+            }
+            
+            if enableStatsFeature {
+                Section {
+                    HStack {
+                        Text("Monitoring Status")
+                        Spacer()
+                        HStack(spacing: 4) {
+                            Circle()
+                                .fill(statsManager.isMonitoring ? .green : .red)
+                                .frame(width: 8, height: 8)
+                            Text(statsManager.isMonitoring ? "Active" : "Stopped")
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    
+                    if statsManager.isMonitoring {
+                        HStack {
+                            Text("CPU Usage")
+                            Spacer()
+                            Text(statsManager.cpuUsageString)
+                                .foregroundStyle(.secondary)
+                        }
+                        
+                        HStack {
+                            Text("Memory Usage")
+                            Spacer()
+                            Text(statsManager.memoryUsageString)
+                                .foregroundStyle(.secondary)
+                        }
+                        
+                        HStack {
+                            Text("GPU Usage")
+                            Spacer()
+                            Text(statsManager.gpuUsageString)
+                                .foregroundStyle(.secondary)
+                        }
+                        
+                        HStack {
+                            Text("Last Updated")
+                            Spacer()
+                            Text(statsManager.lastUpdated, style: .relative)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                } header: {
+                    Text("System Performance")
+                }
+                
+                Section {
+                    HStack {
+                        Button(statsManager.isMonitoring ? "Stop Monitoring" : "Start Monitoring") {
+                            if statsManager.isMonitoring {
+                                statsManager.stopMonitoring()
+                            } else {
+                                statsManager.startMonitoring()
+                            }
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .foregroundColor(statsManager.isMonitoring ? .red : .blue)
+                        
+                        Spacer()
+                        
+                        Button("Clear Data") {
+                            clearStatsData()
+                        }
+                        .buttonStyle(.bordered)
+                        .disabled(statsManager.isMonitoring)
+                    }
+                } header: {
+                    Text("Controls")
+                }
+            }
+        }
+        .navigationTitle("Stats")
+    }
+    
+    private func clearStatsData() {
+        statsManager.cpuHistory = Array(repeating: 0.0, count: 30)
+        statsManager.memoryHistory = Array(repeating: 0.0, count: 30) 
+        statsManager.gpuHistory = Array(repeating: 0.0, count: 30)
     }
 }
 
