@@ -13,7 +13,10 @@ struct DynamicIslandHeader: View {
     @EnvironmentObject var webcamManager: WebcamManager
     @ObservedObject var batteryModel = BatteryStatusViewModel.shared
     @ObservedObject var coordinator = DynamicIslandViewCoordinator.shared
+    @ObservedObject var clipboardManager = ClipboardManager.shared
     @StateObject var tvm = TrayDrop.shared
+    @State private var showClipboardPopover = false
+    
     var body: some View {
         HStack(spacing: 0) {
             HStack {
@@ -61,6 +64,41 @@ struct DynamicIslandHeader: View {
                         }
                         .buttonStyle(PlainButtonStyle())
                     }
+                    
+                    if Defaults[.enableClipboardManager] {
+                        Button(action: {
+                            showClipboardPopover.toggle()
+                        }) {
+                            Capsule()
+                                .fill(.black)
+                                .frame(width: 30, height: 30)
+                                .overlay {
+                                    Image(systemName: "doc.on.clipboard")
+                                        .foregroundColor(.white)
+                                        .padding()
+                                        .imageScale(.medium)
+                                }
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                        .popover(isPresented: $showClipboardPopover, arrowEdge: .bottom) {
+                            ClipboardHistoryPopover(isPresented: $showClipboardPopover)
+                                .onAppear {
+                                    vm.isClipboardPopoverActive = true
+                                }
+                                .onDisappear {
+                                    vm.isClipboardPopoverActive = false
+                                }
+                        }
+                        .onChange(of: showClipboardPopover) { isOpen in
+                            vm.isClipboardPopoverActive = isOpen
+                        }
+                        .onAppear {
+                            if Defaults[.enableClipboardManager] && !clipboardManager.isMonitoring {
+                                clipboardManager.startMonitoring()
+                            }
+                        }
+                    }
+                    
                     if Defaults[.settingsIconInNotch] {
                         Button(action: {
                             SettingsWindowController.shared.showWindow()

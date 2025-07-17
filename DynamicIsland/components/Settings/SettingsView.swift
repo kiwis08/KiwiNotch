@@ -63,6 +63,9 @@ struct SettingsView: View {
                 NavigationLink(value: "Stats") {
                     Label("Stats", systemImage: "chart.line.uptrend.xyaxis")
                 }
+                NavigationLink(value: "Clipboard") {
+                    Label("Clipboard", systemImage: "doc.on.clipboard")
+                }
                 NavigationLink(value: "Shortcuts") {
                     Label("Shortcuts", systemImage: "keyboard")
                 }
@@ -97,6 +100,8 @@ struct SettingsView: View {
                     Shelf()
                 case "Stats":
                     Stats()
+                case "Clipboard":
+                    ClipboardSettings()
                 case "Shortcuts":
                     Shortcuts()
                 case "Extensions":
@@ -1296,6 +1301,126 @@ func warningBadge(_ text: String, _ description: String) -> some View {
                     .foregroundStyle(.secondary)
             }
             Spacer()
+        }
+    }
+}
+
+struct ClipboardSettings: View {
+    @ObservedObject var clipboardManager = ClipboardManager.shared
+    @Default(.enableClipboardManager) var enableClipboardManager
+    @Default(.clipboardHistorySize) var clipboardHistorySize
+    
+    var body: some View {
+        Form {
+            Section {
+                Defaults.Toggle("Enable Clipboard Manager", key: .enableClipboardManager)
+                    .onChange(of: enableClipboardManager) { enabled in
+                        if enabled {
+                            clipboardManager.startMonitoring()
+                        } else {
+                            clipboardManager.stopMonitoring()
+                        }
+                    }
+            } header: {
+                Text("Clipboard Manager")
+            } footer: {
+                Text("Monitor clipboard changes and keep a history of recent copies. The clipboard button will appear in the header next to the settings gear.")
+            }
+            
+            if enableClipboardManager {
+                Section {
+                    HStack {
+                        Text("History Size")
+                        Spacer()
+                        Picker("History Size", selection: $clipboardHistorySize) {
+                            Text("3 items").tag(3)
+                            Text("5 items").tag(5)
+                            Text("10 items").tag(10)
+                        }
+                        .pickerStyle(.menu)
+                        .frame(width: 100)
+                    }
+                    
+                    HStack {
+                        Text("Current Items")
+                        Spacer()
+                        Text("\(clipboardManager.clipboardHistory.count)")
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    HStack {
+                        Text("Monitoring Status")
+                        Spacer()
+                        Text(clipboardManager.isMonitoring ? "Active" : "Stopped")
+                            .foregroundColor(clipboardManager.isMonitoring ? .green : .secondary)
+                    }
+                } header: {
+                    Text("Settings")
+                }
+                
+                Section {
+                    Button("Clear Clipboard History") {
+                        clipboardManager.clearHistory()
+                    }
+                    .foregroundColor(.red)
+                    .disabled(clipboardManager.clipboardHistory.isEmpty)
+                } header: {
+                    Text("Actions")
+                } footer: {
+                    Text("This will permanently delete all stored clipboard history. The clipboard button is located to the left of the settings gear in the header.")
+                }
+                
+                if !clipboardManager.clipboardHistory.isEmpty {
+                    Section {
+                        ForEach(clipboardManager.clipboardHistory) { item in
+                            VStack(alignment: .leading, spacing: 4) {
+                                HStack {
+                                    Image(systemName: item.type.icon)
+                                        .foregroundColor(.blue)
+                                        .frame(width: 16)
+                                    Text(item.type.displayName)
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                    Spacer()
+                                    Text(timeAgoString(from: item.timestamp))
+                                        .font(.caption2)
+                                        .foregroundColor(.secondary)
+                                }
+                                Text(item.preview)
+                                    .font(.system(.body, design: .monospaced))
+                                    .lineLimit(2)
+                            }
+                            .padding(.vertical, 2)
+                        }
+                    } header: {
+                        Text("Current History")
+                    }
+                }
+            }
+        }
+        .formStyle(.grouped)
+        .navigationTitle("Clipboard")
+        .onAppear {
+            if enableClipboardManager && !clipboardManager.isMonitoring {
+                clipboardManager.startMonitoring()
+            }
+        }
+    }
+    
+    private func timeAgoString(from date: Date) -> String {
+        let interval = Date().timeIntervalSince(date)
+        
+        if interval < 60 {
+            return "Just now"
+        } else if interval < 3600 {
+            let minutes = Int(interval / 60)
+            return "\(minutes)m ago"
+        } else if interval < 86400 {
+            let hours = Int(interval / 3600)
+            return "\(hours)h ago"
+        } else {
+            let days = Int(interval / 86400)
+            return "\(days)d ago"
         }
     }
 }

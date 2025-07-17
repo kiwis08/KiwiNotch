@@ -157,6 +157,10 @@ extension Defaults.Keys {
     // MARK: Stats Feature
     static let enableStatsFeature = Key<Bool>("enableStatsFeature", default: false)
     
+    // MARK: Clipboard Feature
+    static let enableClipboardManager = Key<Bool>("enableClipboardManager", default: true)
+    static let clipboardHistorySize = Key<Int>("clipboardHistorySize", default: 3)
+    
     // Helper to determine the default media controller based on macOS version
     static var defaultMediaController: MediaControllerType {
         if #available(macOS 15.4, *) {

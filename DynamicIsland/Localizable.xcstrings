@@ -47,6 +47,15 @@
     "• New feature 1" : {
 
     },
+    "3 items" : {
+
+    },
+    "5 items" : {
+
+    },
+    "10 items" : {
+
+    },
     "About" : {
       "localizations" : {
         "en" : {
@@ -69,6 +78,9 @@
       }
     },
     "Access Denied" : {
+
+    },
+    "Actions" : {
 
     },
     "Activate" : {
@@ -245,7 +257,19 @@
     "Clear" : {
 
     },
+    "Clear Clipboard History" : {
+
+    },
     "Clear Data" : {
+
+    },
+    "Clipboard" : {
+
+    },
+    "Clipboard History" : {
+
+    },
+    "Clipboard Manager" : {
 
     },
     "Close" : {
@@ -267,7 +291,16 @@
     "Controls" : {
 
     },
+    "Copy something to get started" : {
+
+    },
     "CPU Usage" : {
+
+    },
+    "Current History" : {
+
+    },
+    "Current Items" : {
 
     },
     "Custom color" : {
@@ -480,6 +513,9 @@
     "High" : {
 
     },
+    "History Size" : {
+
+    },
     "https://github.com/th-ch/youtube-music" : {
 
     },
@@ -617,6 +653,9 @@
     "Mirror shape" : {
 
     },
+    "Monitor clipboard changes and keep a history of recent copies. The clipboard button will appear in the header next to the settings gear." : {
+
+    },
     "Monitoring Status" : {
 
     },
@@ -636,6 +675,9 @@
 
     },
     "Never hide" : {
+
+    },
+    "No clipboard history" : {
 
     },
     "No custom animation available" : {
@@ -959,6 +1001,9 @@
 
     },
     "TheDynamicIsland" : {
+
+    },
+    "This will permanently delete all stored clipboard history. The clipboard button is located to the left of the settings gear in the header." : {
 
     },
     "Time to Full Charge: %lld min" : {
