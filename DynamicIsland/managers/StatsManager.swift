@@ -3,7 +3,7 @@
 //  DynamicIsland
 //
 //  System performance monitoring for the Dynamic Island Stats feature
-//
+//  Created by Hariharan Mudaliar
 
 import Foundation
 import Combine

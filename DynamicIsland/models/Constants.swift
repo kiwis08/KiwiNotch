@@ -3,7 +3,7 @@
 //  DynamicIsland
 //
 //  Created by Richard Kunkli on 2024. 10. 17..
-//
+//  Modified by Hariharan Mudaliar
 
 import SwiftUI
 import Defaults
@@ -156,6 +156,11 @@ extension Defaults.Keys {
     
     // MARK: Stats Feature
     static let enableStatsFeature = Key<Bool>("enableStatsFeature", default: false)
+    
+    // MARK: Clipboard Feature
+    static let enableClipboardManager = Key<Bool>("enableClipboardManager", default: true)
+    static let clipboardHistorySize = Key<Int>("clipboardHistorySize", default: 3)
+    static let showClipboardIcon = Key<Bool>("showClipboardIcon", default: true)
     
     // Helper to determine the default media controller based on macOS version
     static var defaultMediaController: MediaControllerType {
