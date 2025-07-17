@@ -3,7 +3,7 @@
 //  DynamicIsland
 //
 //  Created by Harsh Vardhan  Goswami  on 04/08/24.
-//
+//  Modified by Hariharan Mudaliar
 
 import Foundation
 import Defaults

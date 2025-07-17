@@ -3,7 +3,7 @@
 //  DynamicIsland
 //
 //  Stats tab view for system performance monitoring
-//
+// Created by Hariharan Mudaliar
 
 import SwiftUI
 import Defaults

@@ -3,7 +3,7 @@
 //  DynamicIsland
 //
 //  Created by Hugo Persson on 2024-08-25.
-//
+//  Modified by Hariharan Mudaliar
 
 import SwiftUI
 

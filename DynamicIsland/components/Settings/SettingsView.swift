@@ -3,7 +3,7 @@
 //  DynamicIsland
 //
 //  Created by Richard Kunkli on 07/08/2024.
-//
+// Modified by Hariharan Mudaliar
 
 import AVFoundation
 import Defaults
