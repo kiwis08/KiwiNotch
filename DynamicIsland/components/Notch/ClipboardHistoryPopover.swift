@@ -10,6 +10,7 @@ import SwiftUI
 struct ClipboardHistoryPopover: View {
     @ObservedObject var clipboardManager = ClipboardManager.shared
     @Binding var isPresented: Bool
+    @EnvironmentObject var vm: DynamicIslandViewModel
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -56,6 +57,18 @@ struct ClipboardHistoryPopover: View {
                 .stroke(Color.gray.opacity(0.2), lineWidth: 1)
         )
         .shadow(color: .black.opacity(0.3), radius: 10, x: 0, y: 5)
+        .onHover { hovering in
+            // Close popover and notch when mouse exits
+            if !hovering {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    isPresented = false
+                    // Also close the notch if no other popovers are active
+                    if vm.notchState == .open && !vm.isBatteryPopoverActive {
+                        vm.close()
+                    }
+                }
+            }
+        }
     }
     
     @ViewBuilder

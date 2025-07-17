@@ -1309,6 +1309,7 @@ struct ClipboardSettings: View {
     @ObservedObject var clipboardManager = ClipboardManager.shared
     @Default(.enableClipboardManager) var enableClipboardManager
     @Default(.clipboardHistorySize) var clipboardHistorySize
+    @Default(.showClipboardIcon) var showClipboardIcon
     
     var body: some View {
         Form {
@@ -1324,17 +1325,20 @@ struct ClipboardSettings: View {
             } header: {
                 Text("Clipboard Manager")
             } footer: {
-                Text("Monitor clipboard changes and keep a history of recent copies. The clipboard button will appear in the header next to the settings gear.")
+                Text("Monitor clipboard changes and keep a history of recent copies. Use Cmd+Shift+V to quickly access clipboard history.")
             }
             
             if enableClipboardManager {
                 Section {
+                    Defaults.Toggle("Show Clipboard Icon", key: .showClipboardIcon)
+                    
                     HStack {
                         Text("History Size")
                         Spacer()
                         Picker("History Size", selection: $clipboardHistorySize) {
                             Text("3 items").tag(3)
                             Text("5 items").tag(5)
+                            Text("7 items").tag(7)
                             Text("10 items").tag(10)
                         }
                         .pickerStyle(.menu)
@@ -1356,6 +1360,8 @@ struct ClipboardSettings: View {
                     }
                 } header: {
                     Text("Settings")
+                } footer: {
+                    Text("The clipboard icon appears in the header next to the settings gear when enabled. Use the global shortcut Cmd+Shift+V or click the icon to access history.")
                 }
                 
                 Section {

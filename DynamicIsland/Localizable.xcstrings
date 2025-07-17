@@ -53,6 +53,9 @@
     "5 items" : {
 
     },
+    "7 items" : {
+
+    },
     "10 items" : {
 
     },
@@ -653,7 +656,7 @@
     "Mirror shape" : {
 
     },
-    "Monitor clipboard changes and keep a history of recent copies. The clipboard button will appear in the header next to the settings gear." : {
+    "Monitor clipboard changes and keep a history of recent copies. Use Cmd+Shift+V to quickly access clipboard history." : {
 
     },
     "Monitoring Status" : {
@@ -998,6 +1001,9 @@
 
     },
     "System Performance" : {
+
+    },
+    "The clipboard icon appears in the header next to the settings gear when enabled. Use the global shortcut Cmd+Shift+V or click the icon to access history." : {
 
     },
     "TheDynamicIsland" : {

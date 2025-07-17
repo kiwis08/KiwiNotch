@@ -10,6 +10,7 @@ import SwiftUI
 import Combine
 import Foundation
 import UniformTypeIdentifiers
+import Defaults
 
 // Clipboard item data structure
 struct ClipboardItem: Identifiable, Codable {
@@ -152,7 +153,11 @@ class ClipboardManager: ObservableObject {
     
     private var timer: Timer?
     private var lastChangeCount: Int = 0
-    private let maxHistoryItems = 3
+    
+    // Use configurable history size from settings
+    private var maxHistoryItems: Int {
+        return Defaults[.clipboardHistorySize]
+    }
     
     // Directory for storing clipboard data files
     static let clipboardDataDirectory: URL = {

@@ -65,7 +65,7 @@ struct DynamicIslandHeader: View {
                         .buttonStyle(PlainButtonStyle())
                     }
                     
-                    if Defaults[.enableClipboardManager] {
+                    if Defaults[.enableClipboardManager] && Defaults[.showClipboardIcon] {
                         Button(action: {
                             showClipboardPopover.toggle()
                         }) {
@@ -138,6 +138,12 @@ struct DynamicIslandHeader: View {
         }
         .foregroundColor(.gray)
         .environmentObject(vm)
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("ToggleClipboardPopover"))) { _ in
+            // Only toggle if clipboard is enabled
+            if Defaults[.enableClipboardManager] {
+                showClipboardPopover.toggle()
+            }
+        }
     }
 }
 

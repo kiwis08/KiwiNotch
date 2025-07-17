@@ -160,6 +160,7 @@ extension Defaults.Keys {
     // MARK: Clipboard Feature
     static let enableClipboardManager = Key<Bool>("enableClipboardManager", default: true)
     static let clipboardHistorySize = Key<Int>("clipboardHistorySize", default: 3)
+    static let showClipboardIcon = Key<Bool>("showClipboardIcon", default: true)
     
     // Helper to determine the default media controller based on macOS version
     static var defaultMediaController: MediaControllerType {

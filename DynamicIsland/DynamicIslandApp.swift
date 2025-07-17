@@ -268,6 +268,41 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             TimerManager.shared.startDemoTimer(duration: 300)
         }
         
+        KeyboardShortcuts.onKeyDown(for: .clipboardHistoryPanel) { [weak self] in
+            guard let self = self else { return }
+            
+            // Only open clipboard if the feature is enabled
+            guard Defaults[.enableClipboardManager] else { return }
+            
+            // Find the appropriate view model based on mouse location
+            let mouseLocation = NSEvent.mouseLocation
+            var viewModel = self.vm
+            
+            if Defaults[.showOnAllDisplays] {
+                for screen in NSScreen.screens {
+                    if screen.frame.contains(mouseLocation) {
+                        if let screenViewModel = self.viewModels[screen] {
+                            viewModel = screenViewModel
+                            break
+                        }
+                    }
+                }
+            }
+            
+            // Open the notch if it's closed
+            if viewModel.notchState == .closed {
+                viewModel.open()
+            }
+            
+            // Start clipboard monitoring if not already running
+            if !ClipboardManager.shared.isMonitoring {
+                ClipboardManager.shared.startMonitoring()
+            }
+            
+            // Post notification to trigger clipboard popover
+            NotificationCenter.default.post(name: NSNotification.Name("ToggleClipboardPopover"), object: nil)
+        }
+        
         if !Defaults[.showOnAllDisplays] {
             let viewModel = self.vm
             let window = createDynamicIslandWindow(
