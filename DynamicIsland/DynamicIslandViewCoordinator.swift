@@ -213,4 +213,12 @@ class DynamicIslandViewCoordinator: ObservableObject {
     func showEmpty() {
         currentView = .home
     }
+    
+    // MARK: - Clipboard Management
+    @Published var shouldToggleClipboardPopover: Bool = false
+    
+    func toggleClipboardPopover() {
+        // Toggle the published property to trigger UI updates
+        shouldToggleClipboardPopover.toggle()
+    }
 }
