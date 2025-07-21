@@ -292,15 +292,20 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             // Open the notch if it's closed
             if viewModel.notchState == .closed {
                 viewModel.open()
+                
+                // Wait a bit for the notch to open before toggling clipboard
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                    self.coordinator.toggleClipboardPopover()
+                }
+            } else {
+                // If notch is already open, toggle immediately
+                self.coordinator.toggleClipboardPopover()
             }
             
             // Start clipboard monitoring if not already running
             if !ClipboardManager.shared.isMonitoring {
                 ClipboardManager.shared.startMonitoring()
             }
-            
-            // Post notification to trigger clipboard popover
-            NotificationCenter.default.post(name: NSNotification.Name("ToggleClipboardPopover"), object: nil)
         }
         
         if !Defaults[.showOnAllDisplays] {
