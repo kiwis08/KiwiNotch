@@ -251,7 +251,13 @@
     "Check for Updates…" : {
 
     },
+    "Choose a custom sound file that will play when the timer completes. Supported formats: MP3, M4A, WAV, AIFF." : {
+
+    },
     "Choose a Music Source" : {
+
+    },
+    "Choose File" : {
 
     },
     "Circle" : {
@@ -300,10 +306,16 @@
     "CPU Usage" : {
 
     },
+    "Current custom timer: %@" : {
+
+    },
     "Current History" : {
 
     },
     "Current Items" : {
+
+    },
+    "Custom" : {
 
     },
     "Custom color" : {
@@ -326,7 +338,16 @@
     "Custom notch size - %.0f" : {
 
     },
+    "Custom Timer" : {
+
+    },
+    "Custom Timer Duration" : {
+
+    },
     "Custom vizualizers (Lottie)" : {
+
+    },
+    "Custom: %@" : {
 
     },
     "Customize in Settings" : {
@@ -335,7 +356,7 @@
     "Default" : {
 
     },
-    "Demo (10s)" : {
+    "Default: dynamic.m4a" : {
 
     },
     "Description" : {
@@ -429,10 +450,16 @@
     "Enable music live activity" : {
 
     },
+    "Enable or disable the timer functionality in the Dynamic Island. The live activity toggle controls whether timer progress is shown in the expanded view." : {
+
+    },
     "Enable sneak peek" : {
 
     },
     "Enable stats monitoring in Settings to view system performance data." : {
+
+    },
+    "Enable timer feature in Settings to use this tab" : {
 
     },
     "Enable timer live activity" : {
@@ -650,6 +677,9 @@
     "Minimum hover duration" : {
 
     },
+    "Minutes" : {
+
+    },
     "Mirror" : {
 
     },
@@ -825,6 +855,9 @@
     "Remember last tab" : {
 
     },
+    "Reset to Default" : {
+
+    },
     "Restart" : {
 
     },
@@ -848,6 +881,9 @@
         }
       }
     },
+    "Seconds" : {
+
+    },
     "Select Calendars" : {
 
     },
@@ -858,6 +894,9 @@
 
     },
     "Selected animation" : {
+
+    },
+    "Set a custom duration for the timer. This will be used when you press the 'Custom' button in the timer interface." : {
 
     },
     "Settings" : {
@@ -957,9 +996,6 @@
     "Start" : {
 
     },
-    "Start 5-min Demo Timer" : {
-
-    },
     "Start Demo Timer:" : {
 
     },
@@ -979,9 +1015,6 @@
 
     },
     "Stop Monitoring" : {
-
-    },
-    "Stop Timer" : {
 
     },
     "Stopped" : {
@@ -1018,6 +1051,15 @@
     "Timer" : {
 
     },
+    "Timer Disabled" : {
+
+    },
+    "Timer Feature" : {
+
+    },
+    "Timer Sound" : {
+
+    },
     "Toggle Notch Open:" : {
 
     },
@@ -1037,6 +1079,9 @@
 
     },
     "unmuted" : {
+
+    },
+    "Update" : {
 
     },
     "Upgrade to Pro" : {

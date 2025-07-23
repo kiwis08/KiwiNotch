@@ -14,6 +14,7 @@ import LottieUI
 import Sparkle
 import SwiftUI
 import SwiftUIIntrospect
+import UniformTypeIdentifiers
 
 struct SettingsView: View {
     @StateObject var extensionManager = DynamicIslandExtensionManager()
@@ -38,6 +39,9 @@ struct SettingsView: View {
                 }
                 NavigationLink(value: "Media") {
                     Label("Media", systemImage: "play.laptopcomputer")
+                }
+                NavigationLink(value: "Timer") {
+                    Label("Timer", systemImage: "timer")
                 }
                 NavigationLink(value: "Calendar") {
                     Label("Calendar", systemImage: "calendar")
@@ -88,6 +92,8 @@ struct SettingsView: View {
                     Appearance()
                 case "Media":
                     Media()
+                case "Timer":
+                    TimerSettings()
                 case "Calendar":
                     CalendarSettings()
                 case "HUD":
@@ -504,27 +510,6 @@ struct Media: View {
                 )
                 .animation(.easeInOut, value: coordinator.musicLiveActivityEnabled)
                 
-                Toggle(
-                    "Enable timer live activity",
-                    isOn: $coordinator.timerLiveActivityEnabled
-                )
-                .animation(.easeInOut, value: coordinator.timerLiveActivityEnabled)
-                
-                // Demo timer button
-                HStack {
-                    Button("Start 5-min Demo Timer") {
-                        TimerManager.shared.startDemoTimer(duration: 300)
-                    }
-                    .buttonStyle(.borderedProminent)
-                    
-                    Spacer()
-                    
-                    Button("Stop Timer") {
-                        TimerManager.shared.stopTimer()
-                    }
-                    .buttonStyle(.bordered)
-                }
-                
                 Toggle("Enable sneak peek", isOn: $enableSneakPeek)
                 Picker("Sneak Peek Style", selection: $sneakPeekStyles){
                     ForEach(SneakPeekStyle.allCases) { style in
@@ -615,6 +600,157 @@ struct CalendarSettings: View {
         }
         // Add navigation title if it's missing or adjust as needed
         .navigationTitle("Calendar")
+    }
+}
+
+struct TimerSettings: View {
+    @ObservedObject private var coordinator = DynamicIslandViewCoordinator.shared
+    @Default(.enableTimerFeature) var enableTimerFeature
+    @AppStorage("customTimerDuration") private var customTimerDuration: Double = 600 // 10 minutes default
+    @State private var customMinutes: Int = 10
+    @State private var customSeconds: Int = 0
+    
+    var body: some View {
+        Form {
+            Section {
+                Defaults.Toggle("Enable timer feature", key: .enableTimerFeature)
+                
+                if enableTimerFeature {
+                    Toggle(
+                        "Enable timer live activity",
+                        isOn: $coordinator.timerLiveActivityEnabled
+                    )
+                    .animation(.easeInOut, value: coordinator.timerLiveActivityEnabled)
+                }
+            } header: {
+                Text("Timer Feature")
+            } footer: {
+                Text("Enable or disable the timer functionality in the Dynamic Island. The live activity toggle controls whether timer progress is shown in the expanded view.")
+            }
+            
+            if enableTimerFeature {
+                Section {
+                    VStack(alignment: .leading, spacing: 16) {
+                        Text("Custom Timer Duration")
+                            .font(.headline)
+                        
+                        HStack(spacing: 16) {
+                            VStack {
+                                Text("Minutes")
+                                    .font(.system(size: 14, weight: .medium))
+                                    .foregroundStyle(.secondary)
+                                
+                                Picker(selection: $customMinutes, label: Text("Minutes")) {
+                                    ForEach(0...59, id: \.self) { minute in
+                                        Text("\(minute)").tag(minute)
+                                    }
+                                }
+                                .pickerStyle(.menu)
+                                .frame(width: 80, height: 40)
+                            }
+                            
+                            VStack {
+                                Text("Seconds")
+                                    .font(.system(size: 14, weight: .medium))
+                                    .foregroundStyle(.secondary)
+                                
+                                Picker(selection: $customSeconds, label: Text("Seconds")) {
+                                    ForEach(0...59, id: \.self) { second in
+                                        Text("\(second)").tag(second)
+                                    }
+                                }
+                                .pickerStyle(.menu)
+                                .frame(width: 80, height: 40)
+                            }
+                        }
+                        
+                        HStack {
+                            Text("Current custom timer: \(customTimerDisplayText)")
+                                .foregroundStyle(.secondary)
+                            Spacer()
+                            Button("Update") {
+                                customTimerDuration = Double(customMinutes * 60 + customSeconds)
+                            }
+                            .disabled(customMinutes == 0 && customSeconds == 0)
+                        }
+                    }
+                } header: {
+                    Text("Custom Timer")
+                } footer: {
+                    Text("Set a custom duration for the timer. This will be used when you press the 'Custom' button in the timer interface.")
+                }
+                
+                Section {
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Text("Timer Sound")
+                                .font(.system(size: 16, weight: .medium))
+                            Spacer()
+                            Button("Choose File") {
+                                selectCustomTimerSound()
+                            }
+                            .buttonStyle(.bordered)
+                        }
+                        
+                        if let customTimerSoundPath = UserDefaults.standard.string(forKey: "customTimerSoundPath") {
+                            Text("Custom: \(URL(fileURLWithPath: customTimerSoundPath).lastPathComponent)")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        } else {
+                            Text("Default: dynamic.m4a")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        
+                        Button("Reset to Default") {
+                            UserDefaults.standard.removeObject(forKey: "customTimerSoundPath")
+                        }
+                        .buttonStyle(.bordered)
+                        .disabled(UserDefaults.standard.string(forKey: "customTimerSoundPath") == nil)
+                    }
+                } header: {
+                    Text("Timer Sound")
+                } footer: {
+                    Text("Choose a custom sound file that will play when the timer completes. Supported formats: MP3, M4A, WAV, AIFF.")
+                }
+            }
+        }
+        .navigationTitle("Timer")
+        .onAppear {
+            let totalMinutes = Int(customTimerDuration) / 60
+            customMinutes = totalMinutes
+            customSeconds = Int(customTimerDuration) % 60
+        }
+    }
+    
+    private var customTimerDisplayText: String {
+        let totalMinutes = Int(customTimerDuration) / 60
+        let seconds = Int(customTimerDuration) % 60
+        let hours = totalMinutes / 60
+        let minutes = totalMinutes % 60
+        
+        if hours > 0 {
+            return "\(hours):\(String(format: "%02d", minutes)):\(String(format: "%02d", seconds))"
+        } else if minutes > 0 {
+            return "\(minutes):\(String(format: "%02d", seconds))"
+        } else {
+            return "\(seconds)s"
+        }
+    }
+    
+    private func selectCustomTimerSound() {
+        let panel = NSOpenPanel()
+        panel.title = "Select Timer Sound"
+        panel.allowedContentTypes = [.audio]
+        panel.allowsMultipleSelection = false
+        panel.canChooseDirectories = false
+        panel.canChooseFiles = true
+        
+        if panel.runModal() == .OK {
+            if let url = panel.url {
+                UserDefaults.standard.set(url.path, forKey: "customTimerSoundPath")
+            }
+        }
     }
 }
 

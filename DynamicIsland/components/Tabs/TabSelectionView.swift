@@ -6,6 +6,7 @@
 //  Modified by Hariharan Mudaliar
 
 import SwiftUI
+import Defaults
 
 struct TabModel: Identifiable {
     let id = UUID()
@@ -14,19 +15,31 @@ struct TabModel: Identifiable {
     let view: NotchViews
 }
 
-let tabs = [
-    TabModel(label: "Home", icon: "house.fill", view: .home),
-    TabModel(label: "Shelf", icon: "tray.fill", view: .shelf),
-    TabModel(label: "Timer", icon: "timer", view: .timer),
-    TabModel(label: "Stats", icon: "chart.line.uptrend.xyaxis", view: .stats)
-]
-
 struct TabSelectionView: View {
     @ObservedObject var coordinator = DynamicIslandViewCoordinator.shared
+    @Default(.enableTimerFeature) var enableTimerFeature
+    @Default(.enableStatsFeature) var enableStatsFeature
     @Namespace var animation
+    
+    var availableTabs: [TabModel] {
+        var tabs = [
+            TabModel(label: "Home", icon: "house.fill", view: .home),
+            TabModel(label: "Shelf", icon: "tray.fill", view: .shelf)
+        ]
+        
+        if enableTimerFeature {
+            tabs.append(TabModel(label: "Timer", icon: "timer", view: .timer))
+        }
+        
+        if enableStatsFeature {
+            tabs.append(TabModel(label: "Stats", icon: "chart.line.uptrend.xyaxis", view: .stats))
+        }
+        
+        return tabs
+    }
     var body: some View {
         HStack(spacing: 0) {
-            ForEach(tabs) { tab in
+            ForEach(availableTabs) { tab in
                     TabButton(label: tab.label, icon: tab.icon, selected: coordinator.currentView == tab.view) {
                         withAnimation(.smooth) {
                             coordinator.currentView = tab.view

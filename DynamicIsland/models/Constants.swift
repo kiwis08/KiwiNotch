@@ -157,6 +157,9 @@ extension Defaults.Keys {
     // MARK: Stats Feature
     static let enableStatsFeature = Key<Bool>("enableStatsFeature", default: false)
     
+    // MARK: Timer Feature
+    static let enableTimerFeature = Key<Bool>("enableTimerFeature", default: true)
+    
     // MARK: Clipboard Feature
     static let enableClipboardManager = Key<Bool>("enableClipboardManager", default: true)
     static let clipboardHistorySize = Key<Int>("clipboardHistorySize", default: 3)
