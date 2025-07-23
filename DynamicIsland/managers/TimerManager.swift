@@ -256,19 +256,37 @@ class TimerManager: ObservableObject {
     }
     
     private func playTimerSound() {
-        // Play default macOS timer sound
-        guard let soundURL = Bundle.main.url(forResource: "dynamic", withExtension: "m4a") else {
-            // Fallback to system sound
+        var soundURL: URL?
+        
+        // Check for custom timer sound first
+        let customTimerSoundPath = UserDefaults.standard.string(forKey: "customTimerSoundPath")
+        if let customPath = customTimerSoundPath, !customPath.isEmpty {
+            // Use custom sound file
+            soundURL = URL(fileURLWithPath: customPath)
+            
+            // Verify the file exists
+            if !FileManager.default.fileExists(atPath: customPath) {
+                soundURL = nil
+            }
+        }
+        
+        // Fall back to default sound if no custom sound or custom sound doesn't exist
+        if soundURL == nil {
+            soundURL = Bundle.main.url(forResource: "dynamic", withExtension: "m4a")
+        }
+        
+        guard let finalSoundURL = soundURL else {
+            // Final fallback to system sound
             NSSound.beep()
             return
         }
         
         do {
-            soundPlayer = try AVAudioPlayer(contentsOf: soundURL)
+            soundPlayer = try AVAudioPlayer(contentsOf: finalSoundURL)
             soundPlayer?.numberOfLoops = -1 // Loop indefinitely
             soundPlayer?.play()
         } catch {
-            // Fallback to system sound
+            // Fallback to system sound if there's an error playing the custom sound
             NSSound.beep()
         }
     }

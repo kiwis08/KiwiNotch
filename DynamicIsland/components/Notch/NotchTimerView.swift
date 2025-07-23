@@ -12,17 +12,39 @@ struct NotchTimerView: View {
     @EnvironmentObject var vm: DynamicIslandViewModel
     @ObservedObject var timerManager = TimerManager.shared
     @ObservedObject var coordinator = DynamicIslandViewCoordinator.shared
+    @Default(.enableTimerFeature) var enableTimerFeature
+    
+    @AppStorage("customTimerDuration") private var customTimerDuration: Double = 600 // 10 minutes default
     
     var body: some View {
-        HStack(alignment: .center, spacing: 32) {
-            // Timer Progress and Controls
-            timerProgressSection
-            
-            // Timer Control Panel
-            controlsSection
+        if enableTimerFeature {
+            HStack(alignment: .center, spacing: 32) {
+                // Timer Progress and Controls
+                timerProgressSection
+                
+                // Timer Control Panel
+                controlsSection
+            }
+            .padding(.horizontal, 20)
+            .transition(.opacity.combined(with: .blurReplace))
+        } else {
+            VStack(spacing: 16) {
+                Image(systemName: "timer.slash")
+                    .font(.system(size: 48, weight: .light))
+                    .foregroundStyle(.secondary)
+                
+                Text("Timer Disabled")
+                    .font(.title2)
+                    .fontWeight(.medium)
+                    .foregroundStyle(.primary)
+                
+                Text("Enable timer feature in Settings to use this tab")
+                    .font(.body)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .padding(.horizontal, 20)
-        .transition(.opacity.combined(with: .blurReplace))
     }
     
     private var timerProgressSection: some View {
@@ -49,8 +71,13 @@ struct NotchTimerView: View {
                 Image(systemName: "timer")
                     .font(.system(size: 32, weight: .medium))
                     .foregroundStyle(timerManager.currentColor)
-                    .scaleEffect(timerManager.isRunning ? 1.1 : 1.0)
-                    .animation(.easeInOut(duration: 0.3).repeatForever(autoreverses: true), value: timerManager.isRunning)
+                    .scaleEffect(timerManager.isRunning && timerManager.isTimerActive ? 1.1 : 1.0)
+                    .animation(
+                        timerManager.isRunning && timerManager.isTimerActive ? 
+                        .easeInOut(duration: 0.3).repeatForever(autoreverses: true) : 
+                        .easeInOut(duration: 0.3), 
+                        value: timerManager.isRunning && timerManager.isTimerActive
+                    )
             }
             
             // Time display
@@ -179,41 +206,59 @@ struct NotchTimerView: View {
                     quickTimerButton(minutes: 15, title: "15 min")
                 }
                 
-                // Demo timer
-                Button(action: {
-                    timerManager.startDemoTimer(duration: 10) // 10 second demo
-                }) {
-                    HStack(spacing: 8) {
-                        Image(systemName: "flask")
-                            .font(.system(size: 14, weight: .medium))
-                        Text("Demo (10s)")
-                            .font(.system(size: 16, weight: .medium))
+                HStack(spacing: 12) {
+                    // Custom timer button
+                    Button(action: {
+                        timerManager.startTimer(duration: customTimerDuration, name: "Custom Timer")
+                    }) {
+                        VStack(spacing: 4) {
+                            Text(customTimerDisplayText)
+                                .font(.system(size: 16, weight: .medium))
+                            Text("Custom")
+                                .font(.system(size: 12, weight: .regular))
+                                .opacity(0.7)
+                        }
+                        .foregroundStyle(.white)
+                        .frame(height: 60)
+                        .frame(minWidth: 80)
+                        .background(.white.opacity(0.08))
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(.white.opacity(0.1), lineWidth: 1)
+                        )
                     }
-                    .foregroundStyle(.white)
-                    .frame(height: 40)
-                    .frame(minWidth: 120)
-                    .background(.white.opacity(0.08))
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(.white.opacity(0.1), lineWidth: 1)
-                    )
-                }
-                .buttonStyle(PlainButtonStyle())
-                .onHover { isHovering in
-                    if isHovering {
-                        NSCursor.pointingHand.push()
-                    } else {
-                        NSCursor.pop()
+                    .buttonStyle(PlainButtonStyle())
+                    .onHover { isHovering in
+                        if isHovering {
+                            NSCursor.pointingHand.push()
+                        } else {
+                            NSCursor.pop()
+                        }
                     }
                 }
             }
+        }
+        }
+    
+    private var customTimerDisplayText: String {
+        let totalMinutes = Int(customTimerDuration) / 60
+        let seconds = Int(customTimerDuration) % 60
+        let hours = totalMinutes / 60
+        let minutes = totalMinutes % 60
+        
+        if hours > 0 {
+            return "\(hours):\(String(format: "%02d", minutes))"
+        } else if minutes > 0 {
+            return "\(minutes) min"
+        } else {
+            return "\(seconds)s"
         }
     }
     
     private func quickTimerButton(minutes: Int, title: String) -> some View {
         Button(action: {
-            timerManager.startDemoTimer(duration: TimeInterval(minutes * 60))
+            timerManager.startTimer(duration: TimeInterval(minutes * 60), name: "\(minutes) Min Timer")
         }) {
             VStack(spacing: 4) {
                 Text("\(minutes)")
