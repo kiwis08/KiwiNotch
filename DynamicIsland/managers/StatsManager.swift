@@ -258,13 +258,11 @@ class StatsManager: ObservableObject {
     }
     
     private func getDiskStats() -> (bytesRead: UInt64, bytesWritten: UInt64) {
-        // Use IOKit to get disk I/O statistics
+        // Use IOKit to get disk I/O statistics from IOStorage service
         var totalBytesRead: UInt64 = 0
         var totalBytesWritten: UInt64 = 0
         
-        // Create matching dictionary for IOService
-        let matchingDict = IOServiceMatching("IOBlockStorageDriver")
-        
+        let matchingDict = IOServiceMatching("IOStorage")
         var iterator: io_iterator_t = 0
         let result = IOServiceGetMatchingServices(kIOMasterPortDefault, matchingDict, &iterator)
         
@@ -290,11 +288,12 @@ class StatsManager: ObservableObject {
                 continue
             }
             
-            if let bytesRead = statistics["Bytes read"] as? UInt64 {
+            // Use the correct property names for APFS/modern filesystems
+            if let bytesRead = statistics["Bytes read from block device"] as? UInt64 {
                 totalBytesRead += bytesRead
             }
             
-            if let bytesWritten = statistics["Bytes written"] as? UInt64 {
+            if let bytesWritten = statistics["Bytes written to block device"] as? UInt64 {
                 totalBytesWritten += bytesWritten
             }
         }
