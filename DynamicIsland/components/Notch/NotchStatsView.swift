@@ -118,18 +118,144 @@ struct NotchStatsView: View {
         return graphs
     }
     
-    var gridColumns: [GridItem] {
+    // New vertical expansion layout system
+    @ViewBuilder
+    var statsGridLayout: some View {
         let graphCount = availableGraphs.count
         
-        if graphCount <= 3 {
-            // Horizontal layout for 1-3 graphs
-            return Array(repeating: GridItem(.flexible(), spacing: 12), count: graphCount)
-        } else {
-            // Compressed grid layout for 4+ graphs
-            return Array(repeating: GridItem(.flexible(), spacing: 8), count: graphCount)
+        switch graphCount {
+        case 1...3:
+            // Single row for 1-3 graphs
+            HStack(spacing: 12) {
+                ForEach(0..<graphCount, id: \.self) { index in
+                    graphView(for: availableGraphs[index])
+                        .frame(maxWidth: .infinity)
+                        .transition(.asymmetric(
+                            insertion: .scale.combined(with: .opacity),
+                            removal: .scale.combined(with: .opacity)
+                        ))
+                }
+            }
+            .animation(.easeInOut(duration: 0.25), value: graphCount)
+            
+        case 4:
+            // 2x2 quadrants for 4 graphs
+            VStack(spacing: 12) {
+                HStack(spacing: 12) {
+                    graphView(for: availableGraphs[0])
+                        .frame(maxWidth: .infinity)
+                        .transition(.asymmetric(
+                            insertion: .scale.combined(with: .opacity),
+                            removal: .scale.combined(with: .opacity)
+                        ))
+                    graphView(for: availableGraphs[1])
+                        .frame(maxWidth: .infinity)
+                        .transition(.asymmetric(
+                            insertion: .scale.combined(with: .opacity),
+                            removal: .scale.combined(with: .opacity)
+                        ))
+                }
+                HStack(spacing: 12) {
+                    graphView(for: availableGraphs[2])
+                        .frame(maxWidth: .infinity)
+                        .transition(.asymmetric(
+                            insertion: .scale.combined(with: .opacity),
+                            removal: .scale.combined(with: .opacity)
+                        ))
+                    graphView(for: availableGraphs[3])
+                        .frame(maxWidth: .infinity)
+                        .transition(.asymmetric(
+                            insertion: .scale.combined(with: .opacity),
+                            removal: .scale.combined(with: .opacity)
+                        ))
+                }
+            }
+            .animation(.easeInOut(duration: 0.25), value: graphCount)
+            
+        case 5:
+            // 3 on top, 2 on bottom (taking half space each)
+            VStack(spacing: 12) {
+                // Top row: 3 graphs
+                HStack(spacing: 12) {
+                    graphView(for: availableGraphs[0])
+                        .frame(maxWidth: .infinity)
+                        .transition(.asymmetric(
+                            insertion: .scale.combined(with: .opacity),
+                            removal: .scale.combined(with: .opacity)
+                        ))
+                    graphView(for: availableGraphs[1])
+                        .frame(maxWidth: .infinity)
+                        .transition(.asymmetric(
+                            insertion: .scale.combined(with: .opacity),
+                            removal: .scale.combined(with: .opacity)
+                        ))
+                    graphView(for: availableGraphs[2])
+                        .frame(maxWidth: .infinity)
+                        .transition(.asymmetric(
+                            insertion: .scale.combined(with: .opacity),
+                            removal: .scale.combined(with: .opacity)
+                        ))
+                }
+                // Bottom row: 2 graphs centered
+                HStack(spacing: 12) {
+                    Spacer()
+                    graphView(for: availableGraphs[3])
+                        .frame(maxWidth: .infinity)
+                        .transition(.asymmetric(
+                            insertion: .scale.combined(with: .opacity),
+                            removal: .scale.combined(with: .opacity)
+                        ))
+                    graphView(for: availableGraphs[4])
+                        .frame(maxWidth: .infinity)
+                        .transition(.asymmetric(
+                            insertion: .scale.combined(with: .opacity),
+                            removal: .scale.combined(with: .opacity)
+                        ))
+                    Spacer()
+                }
+            }
+            .animation(.easeInOut(duration: 0.25), value: graphCount)
+            
+        default:
+            // Fallback for more than 5 graphs (shouldn't happen with current settings)
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: min(3, graphCount)), spacing: 12) {
+                ForEach(0..<graphCount, id: \.self) { index in
+                    graphView(for: availableGraphs[index])
+                        .transition(.asymmetric(
+                            insertion: .scale.combined(with: .opacity),
+                            removal: .scale.combined(with: .opacity)
+                        ))
+                }
+            }
+            .animation(.easeInOut(duration: 0.25), value: graphCount)
         }
     }
     
+    // Helper function to create graph views
+    @ViewBuilder
+    func graphView(for graphData: GraphData) -> some View {
+        if let singleData = graphData as? SingleGraphData {
+            StatCard(
+                title: singleData.title,
+                value: singleData.value,
+                data: singleData.data,
+                color: singleData.color,
+                icon: singleData.icon
+            )
+        } else if let dualData = graphData as? DualGraphData {
+            DualStatCard(
+                title: dualData.title,
+                positiveValue: dualData.positiveValue,
+                negativeValue: dualData.negativeValue,
+                positiveData: dualData.positiveData,
+                negativeData: dualData.negativeData,
+                positiveColor: dualData.positiveColor,
+                negativeColor: dualData.negativeColor,
+                icon: dualData.icon
+            )
+        }
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             if !enableStatsFeature {
@@ -171,39 +297,18 @@ struct NotchStatsView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .padding()
             } else {
-                // Stats content with dynamic layout
+                // Stats content with vertical expansion layout
                 ZStack(alignment: .topTrailing) {
                     VStack(spacing: 12) {
-                        // Dynamic Stats Grid
-                        LazyVGrid(columns: gridColumns, spacing: 12) {
-                            ForEach(0..<availableGraphs.count, id: \.self) { index in
-                                let graphData = availableGraphs[index]
-                                
-                                if let singleData = graphData as? SingleGraphData {
-                                    StatCard(
-                                        title: singleData.title,
-                                        value: singleData.value,
-                                        data: singleData.data,
-                                        color: singleData.color,
-                                        icon: singleData.icon
-                                    )
-                                } else if let dualData = graphData as? DualGraphData {
-                                    DualStatCard(
-                                        title: dualData.title,
-                                        positiveValue: dualData.positiveValue,
-                                        negativeValue: dualData.negativeValue,
-                                        positiveData: dualData.positiveData,
-                                        negativeData: dualData.negativeData,
-                                        positiveColor: dualData.positiveColor,
-                                        negativeColor: dualData.negativeColor,
-                                        icon: dualData.icon
-                                    )
-                                }
-                            }
-                        }
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        // New vertical expansion layout
+                        statsGridLayout
                     }
                     .padding(16)
+                    .animation(.easeInOut(duration: 0.25), value: availableGraphs.count)
+                    .transition(.asymmetric(
+                        insertion: .scale.combined(with: .opacity),
+                        removal: .scale.combined(with: .opacity)
+                    ))
                     
                     // Live indicator and controls in top-right corner
                     HStack(spacing: 8) {

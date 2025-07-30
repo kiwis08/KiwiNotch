@@ -38,13 +38,17 @@ struct ContentView: View {
         
         let enabledGraphsCount = [showCpuGraph, showMemoryGraph, showGpuGraph, showNetworkGraph, showDiskGraph].filter { $0 }.count
         
-        // If 4+ graphs are enabled, increase width
+        // Calculate height based on layout: 1-3 graphs = single row, 4+ graphs = two rows
+        var requiredHeight = openNotchSize.height
+        
         if enabledGraphsCount >= 4 {
-            let extraWidth: CGFloat = CGFloat(enabledGraphsCount - 3) * 120
-            return CGSize(width: openNotchSize.width + extraWidth, height: openNotchSize.height)
+            // Two rows needed - add height for second row plus spacing
+            let extraHeight: CGFloat = 120 + 12 // Graph height + spacing
+            requiredHeight = openNotchSize.height + extraHeight
         }
         
-        return openNotchSize
+        // Width stays constant - no horizontal expansion
+        return CGSize(width: openNotchSize.width, height: requiredHeight)
     }
     
 

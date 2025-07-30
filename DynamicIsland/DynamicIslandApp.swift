@@ -86,12 +86,31 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var previousScreens: [NSScreen]?
     private var onboardingWindowController: NSWindowController?
     private var cancellables = Set<AnyCancellable>()
+    
+    // Debouncing mechanism for window size updates
+    private var windowSizeUpdateWorkItem: DispatchWorkItem?
+    
+    private func debouncedUpdateWindowSize() {
+        // Cancel any existing work item
+        windowSizeUpdateWorkItem?.cancel()
+        
+        // Create new work item with delay
+        let workItem = DispatchWorkItem { [weak self] in
+            self?.updateWindowSizeIfNeeded()
+        }
+        
+        // Store reference and schedule
+        windowSizeUpdateWorkItem = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15, execute: workItem)
+    }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
         return false
     }
     
     func applicationWillTerminate(_ notification: Notification) {
+        // Cancel any pending window size updates
+        windowSizeUpdateWorkItem?.cancel()
         NotificationCenter.default.removeObserver(self)
     }
     
@@ -126,9 +145,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private func createDynamicIslandWindow(for screen: NSScreen, with viewModel: DynamicIslandViewModel)
         -> NSWindow
     {
+        // Use the current required size instead of always using openNotchSize
+        let requiredSize = calculateRequiredNotchSize()
+        
         let window = DynamicIslandWindow(
             contentRect: NSRect(
-                x: 0, y: 0, width: openNotchSize.width, height: openNotchSize.height),
+                x: 0, y: 0, width: requiredSize.width, height: requiredSize.height),
             styleMask: [.borderless, .nonactivatingPanel, .utilityWindow, .hudWindow],
             backing: .buffered,
             defer: false
@@ -151,14 +173,20 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             window.alphaValue = 0
         }
         
-        DispatchQueue.main.async { [weak window] in
-            guard let window = window else { return }
-            let screenFrame = screen.frame
-            window.setFrameOrigin(
-                NSPoint(
-                    x: screenFrame.origin.x + (screenFrame.width / 2) - window.frame.width / 2,
-                    y: screenFrame.origin.y + screenFrame.height - window.frame.height
-                ))
+        // Use the same centering logic as updateWindowSizeIfNeeded()
+        let screenFrame = screen.frame
+        let centerX = screenFrame.origin.x + (screenFrame.width / 2)
+        let newX = centerX - (window.frame.width / 2)
+        let newY = screenFrame.origin.y + screenFrame.height - window.frame.height
+        
+        window.setFrame(NSRect(
+            x: newX,
+            y: newY,
+            width: window.frame.width,
+            height: window.frame.height
+        ), display: false)
+        
+        if changeAlpha {
             window.alphaValue = 1
         }
     }
@@ -167,22 +195,65 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Calculate required size based on current state
         let requiredSize = calculateRequiredNotchSize()
         
-        // Update all windows if size has changed
-        for (screen, window) in windows {
-            if window.frame.size != requiredSize {
-                let screenFrame = screen.frame
-                let newFrame = NSRect(
-                    x: screenFrame.origin.x + (screenFrame.width / 2) - requiredSize.width / 2,
-                    y: screenFrame.origin.y + screenFrame.height - requiredSize.height,
-                    width: requiredSize.width,
-                    height: requiredSize.height
-                )
+        if Defaults[.showOnAllDisplays] {
+            // Update all windows if size has changed (multi-display mode)
+            for (screen, window) in windows {
+                if window.frame.size != requiredSize {
+                    // Calculate center position BEFORE any changes
+                    let screenFrame = screen.frame
+                    let centerX = screenFrame.origin.x + (screenFrame.width / 2)
+                    let newX = centerX - (requiredSize.width / 2)
+                    let newY = screenFrame.origin.y + screenFrame.height - requiredSize.height
+                    
+                    // Stop any existing animations first
+                    NSAnimationContext.runAnimationGroup { _ in
+                        window.animator().setFrame(window.frame, display: false)
+                    }
+                    
+                    // Animate window resize smoothly
+                    NSAnimationContext.runAnimationGroup { context in
+                        context.duration = 0.25
+                        context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+                        context.allowsImplicitAnimation = true
+                        window.animator().setFrame(NSRect(
+                            x: newX,
+                            y: newY,
+                            width: requiredSize.width,
+                            height: requiredSize.height
+                        ), display: true)
+                    }
+                }
+            }
+        } else {
+            // Update single window if size has changed (single display mode)
+            if let window = window, window.frame.size != requiredSize {
+                // Find the screen this window is on
+                let currentScreen = NSScreen.screens.first { screen in
+                    screen.frame.intersects(window.frame)
+                } ?? NSScreen.main ?? NSScreen.screens.first!
                 
-                // Animate the frame change for smooth transition
+                // Calculate center position BEFORE any changes
+                let screenFrame = currentScreen.frame
+                let centerX = screenFrame.origin.x + (screenFrame.width / 2)
+                let newX = centerX - (requiredSize.width / 2)
+                let newY = screenFrame.origin.y + screenFrame.height - requiredSize.height
+                
+                // Stop any existing animations first
+                NSAnimationContext.runAnimationGroup { _ in
+                    window.animator().setFrame(window.frame, display: false)
+                }
+                
+                // Animate window resize smoothly
                 NSAnimationContext.runAnimationGroup { context in
-                    context.duration = 0.3
+                    context.duration = 0.25
+                    context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
                     context.allowsImplicitAnimation = true
-                    window.setFrame(newFrame, display: true, animate: true)
+                    window.animator().setFrame(NSRect(
+                        x: newX,
+                        y: newY,
+                        width: requiredSize.width,
+                        height: requiredSize.height
+                    ), display: true)
                 }
             }
         }
@@ -202,61 +273,51 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             Defaults[.showDiskGraph]
         ].filter { $0 }.count
         
-        // If 4+ graphs are enabled, increase width
+        // Calculate height based on layout: 1-3 graphs = single row, 4+ graphs = two rows
+        var requiredHeight = openNotchSize.height
+        
         if enabledGraphsCount >= 4 {
-            let extraWidth: CGFloat = CGFloat(enabledGraphsCount - 3) * 120
-            return CGSize(width: openNotchSize.width + extraWidth, height: openNotchSize.height)
+            // Two rows needed - add height for second row plus spacing
+            let extraHeight: CGFloat = 120 + 12 // Graph height + spacing
+            requiredHeight = openNotchSize.height + extraHeight
         }
         
-        return openNotchSize
+        // Width stays constant - no horizontal expansion
+        return CGSize(width: openNotchSize.width, height: requiredHeight)
     }
     
     func applicationDidFinishLaunching(_ notification: Notification) {
 
         coordinator.setupWorkersNotificationObservers()
         
-        // Observe tab changes to update window size dynamically
-        coordinator.objectWillChange.sink { [weak self] in
-            DispatchQueue.main.async {
-                self?.updateWindowSizeIfNeeded()
-            }
+        // Observe tab changes - use debounced updates
+        coordinator.$currentView.sink { [weak self] newView in
+            self?.debouncedUpdateWindowSize()
         }.store(in: &cancellables)
         
-        // Observe stats settings changes
+        // Observe stats settings changes - use debounced updates
         Defaults.publisher(.enableStatsFeature, options: []).sink { [weak self] _ in
-            DispatchQueue.main.async {
-                self?.updateWindowSizeIfNeeded()
-            }
+            self?.debouncedUpdateWindowSize()
         }.store(in: &cancellables)
         
         Defaults.publisher(.showCpuGraph, options: []).sink { [weak self] _ in
-            DispatchQueue.main.async {
-                self?.updateWindowSizeIfNeeded()
-            }
+            self?.debouncedUpdateWindowSize()
         }.store(in: &cancellables)
         
         Defaults.publisher(.showMemoryGraph, options: []).sink { [weak self] _ in
-            DispatchQueue.main.async {
-                self?.updateWindowSizeIfNeeded()
-            }
+            self?.debouncedUpdateWindowSize()
         }.store(in: &cancellables)
         
         Defaults.publisher(.showGpuGraph, options: []).sink { [weak self] _ in
-            DispatchQueue.main.async {
-                self?.updateWindowSizeIfNeeded()
-            }
+            self?.debouncedUpdateWindowSize()
         }.store(in: &cancellables)
         
         Defaults.publisher(.showNetworkGraph, options: []).sink { [weak self] _ in
-            DispatchQueue.main.async {
-                self?.updateWindowSizeIfNeeded()
-            }
+            self?.debouncedUpdateWindowSize()
         }.store(in: &cancellables)
         
         Defaults.publisher(.showDiskGraph, options: []).sink { [weak self] _ in
-            DispatchQueue.main.async {
-                self?.updateWindowSizeIfNeeded()
-            }
+            self?.debouncedUpdateWindowSize()
         }.store(in: &cancellables)
 
         NotificationCenter.default.addObserver(
