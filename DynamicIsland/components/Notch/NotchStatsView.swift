@@ -118,21 +118,6 @@ struct NotchStatsView: View {
         return graphs
     }
     
-    var dynamicNotchSize: CGSize {
-        let graphCount = availableGraphs.count
-        
-        // Base size for 1-3 graphs
-        let baseWidth: CGFloat = 610
-        
-        // If 4+ graphs, increase width to accommodate
-        if graphCount >= 4 {
-            let extraWidth: CGFloat = CGFloat(graphCount - 3) * 120
-            return CGSize(width: baseWidth + extraWidth, height: 200)
-        }
-        
-        return CGSize(width: baseWidth, height: 200)
-    }
-    
     var gridColumns: [GridItem] {
         let graphCount = availableGraphs.count
         
@@ -264,7 +249,7 @@ struct NotchStatsView: View {
                 }
             }
         }
-        .frame(maxWidth: dynamicNotchSize.width, maxHeight: dynamicNotchSize.height)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color(NSColor.windowBackgroundColor).opacity(0.1))
         .clipShape(RoundedRectangle(cornerRadius: 12))
         .onAppear {

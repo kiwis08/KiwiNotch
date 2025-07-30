@@ -116,12 +116,35 @@ class DynamicIslandViewModel: NSObject, ObservableObject {
 
     func open() {
         withAnimation(.bouncy) {
-            self.notchSize = openNotchSize
+            self.notchSize = calculateDynamicNotchSize()
             self.notchState = .open
         }
         
         // Force music information update when notch is opened
         MusicManager.shared.forceUpdate()
+    }
+    
+    private func calculateDynamicNotchSize() -> CGSize {
+        // Only apply dynamic sizing when on stats tab and stats are enabled
+        guard DynamicIslandViewCoordinator.shared.currentView == .stats && Defaults[.enableStatsFeature] else {
+            return openNotchSize
+        }
+        
+        let enabledGraphsCount = [
+            Defaults[.showCpuGraph],
+            Defaults[.showMemoryGraph], 
+            Defaults[.showGpuGraph],
+            Defaults[.showNetworkGraph],
+            Defaults[.showDiskGraph]
+        ].filter { $0 }.count
+        
+        // If 4+ graphs are enabled, increase width
+        if enabledGraphsCount >= 4 {
+            let extraWidth: CGFloat = CGFloat(enabledGraphsCount - 3) * 120
+            return CGSize(width: openNotchSize.width + extraWidth, height: openNotchSize.height)
+        }
+        
+        return openNotchSize
     }
 
     func close() {

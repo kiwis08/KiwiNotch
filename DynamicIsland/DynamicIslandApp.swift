@@ -85,6 +85,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var closeNotchWorkItem: DispatchWorkItem?
     private var previousScreens: [NSScreen]?
     private var onboardingWindowController: NSWindowController?
+    private var cancellables = Set<AnyCancellable>()
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
         return false
@@ -162,9 +163,101 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
     
+    private func updateWindowSizeIfNeeded() {
+        // Calculate required size based on current state
+        let requiredSize = calculateRequiredNotchSize()
+        
+        // Update all windows if size has changed
+        for (screen, window) in windows {
+            if window.frame.size != requiredSize {
+                let screenFrame = screen.frame
+                let newFrame = NSRect(
+                    x: screenFrame.origin.x + (screenFrame.width / 2) - requiredSize.width / 2,
+                    y: screenFrame.origin.y + screenFrame.height - requiredSize.height,
+                    width: requiredSize.width,
+                    height: requiredSize.height
+                )
+                
+                // Animate the frame change for smooth transition
+                NSAnimationContext.runAnimationGroup { context in
+                    context.duration = 0.3
+                    context.allowsImplicitAnimation = true
+                    window.setFrame(newFrame, display: true, animate: true)
+                }
+            }
+        }
+    }
+    
+    private func calculateRequiredNotchSize() -> CGSize {
+        // Only apply dynamic sizing when on stats tab and stats are enabled
+        guard coordinator.currentView == .stats && Defaults[.enableStatsFeature] else {
+            return openNotchSize
+        }
+        
+        let enabledGraphsCount = [
+            Defaults[.showCpuGraph],
+            Defaults[.showMemoryGraph], 
+            Defaults[.showGpuGraph],
+            Defaults[.showNetworkGraph],
+            Defaults[.showDiskGraph]
+        ].filter { $0 }.count
+        
+        // If 4+ graphs are enabled, increase width
+        if enabledGraphsCount >= 4 {
+            let extraWidth: CGFloat = CGFloat(enabledGraphsCount - 3) * 120
+            return CGSize(width: openNotchSize.width + extraWidth, height: openNotchSize.height)
+        }
+        
+        return openNotchSize
+    }
+    
     func applicationDidFinishLaunching(_ notification: Notification) {
 
         coordinator.setupWorkersNotificationObservers()
+        
+        // Observe tab changes to update window size dynamically
+        coordinator.objectWillChange.sink { [weak self] in
+            DispatchQueue.main.async {
+                self?.updateWindowSizeIfNeeded()
+            }
+        }.store(in: &cancellables)
+        
+        // Observe stats settings changes
+        Defaults.publisher(.enableStatsFeature, options: []).sink { [weak self] _ in
+            DispatchQueue.main.async {
+                self?.updateWindowSizeIfNeeded()
+            }
+        }.store(in: &cancellables)
+        
+        Defaults.publisher(.showCpuGraph, options: []).sink { [weak self] _ in
+            DispatchQueue.main.async {
+                self?.updateWindowSizeIfNeeded()
+            }
+        }.store(in: &cancellables)
+        
+        Defaults.publisher(.showMemoryGraph, options: []).sink { [weak self] _ in
+            DispatchQueue.main.async {
+                self?.updateWindowSizeIfNeeded()
+            }
+        }.store(in: &cancellables)
+        
+        Defaults.publisher(.showGpuGraph, options: []).sink { [weak self] _ in
+            DispatchQueue.main.async {
+                self?.updateWindowSizeIfNeeded()
+            }
+        }.store(in: &cancellables)
+        
+        Defaults.publisher(.showNetworkGraph, options: []).sink { [weak self] _ in
+            DispatchQueue.main.async {
+                self?.updateWindowSizeIfNeeded()
+            }
+        }.store(in: &cancellables)
+        
+        Defaults.publisher(.showDiskGraph, options: []).sink { [weak self] _ in
+            DispatchQueue.main.async {
+                self?.updateWindowSizeIfNeeded()
+            }
+        }.store(in: &cancellables)
 
         NotificationCenter.default.addObserver(
             self,
