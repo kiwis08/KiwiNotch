@@ -21,6 +21,35 @@ struct ContentView: View {
     @ObservedObject var musicManager = MusicManager.shared
     @ObservedObject var timerManager = TimerManager.shared
     @ObservedObject var batteryModel = BatteryStatusViewModel.shared
+    @ObservedObject var statsManager = StatsManager.shared
+    
+    @Default(.enableStatsFeature) var enableStatsFeature
+    @Default(.showCpuGraph) var showCpuGraph
+    @Default(.showMemoryGraph) var showMemoryGraph
+    @Default(.showGpuGraph) var showGpuGraph
+    @Default(.showNetworkGraph) var showNetworkGraph
+    @Default(.showDiskGraph) var showDiskGraph
+    
+    var dynamicNotchSize: CGSize {
+        // Only apply dynamic sizing when on stats tab and stats are enabled
+        guard coordinator.currentView == .stats && enableStatsFeature else {
+            return openNotchSize
+        }
+        
+        let enabledGraphsCount = [showCpuGraph, showMemoryGraph, showGpuGraph, showNetworkGraph, showDiskGraph].filter { $0 }.count
+        
+        // Calculate height based on layout: 1-3 graphs = single row, 4+ graphs = two rows
+        var requiredHeight = openNotchSize.height
+        
+        if enabledGraphsCount >= 4 {
+            // Two rows needed - add height for second row plus spacing
+            let extraHeight: CGFloat = 120 + 12 // Graph height + spacing
+            requiredHeight = openNotchSize.height + extraHeight
+        }
+        
+        // Width stays constant - no horizontal expansion
+        return CGSize(width: openNotchSize.width, height: requiredHeight)
+    }
     
 
     @State private var isHovering: Bool = false
@@ -173,7 +202,7 @@ struct ContentView: View {
 //                    .keyboardShortcut("E", modifiers: .command)
                 }
         }
-        .frame(maxWidth: openNotchSize.width, maxHeight: openNotchSize.height, alignment: .top)
+        .frame(maxWidth: dynamicNotchSize.width, maxHeight: dynamicNotchSize.height, alignment: .top)
         .shadow(color: ((vm.notchState == .open || isHovering) && Defaults[.enableShadow]) ? .black.opacity(0.6) : .clear, radius: Defaults[.cornerRadiusScaling] ? 10 : 5)
         .background(dragDetector)
         .environmentObject(vm)

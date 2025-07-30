@@ -8,10 +8,254 @@
 import SwiftUI
 import Defaults
 
+// Graph data protocol for unified interface
+protocol GraphData {
+    var title: String { get }
+    var color: Color { get }
+    var icon: String { get }
+    var type: GraphType { get }
+}
+
+enum GraphType {
+    case single
+    case dual
+}
+
+// Single value graph data
+struct SingleGraphData: GraphData {
+    let title: String
+    let value: String
+    let data: [Double]
+    let color: Color
+    let icon: String
+    let type: GraphType = .single
+}
+
+// Dual value graph data (for network/disk)
+struct DualGraphData: GraphData {
+    let title: String
+    let positiveValue: String
+    let negativeValue: String
+    let positiveData: [Double]
+    let negativeData: [Double]
+    let positiveColor: Color
+    let negativeColor: Color
+    let color: Color // Primary color for the component
+    let icon: String
+    let type: GraphType = .dual
+}
+
 struct NotchStatsView: View {
     @ObservedObject var statsManager = StatsManager.shared
     @Default(.enableStatsFeature) var enableStatsFeature
+    @Default(.showCpuGraph) var showCpuGraph
+    @Default(.showMemoryGraph) var showMemoryGraph
+    @Default(.showGpuGraph) var showGpuGraph
+    @Default(.showNetworkGraph) var showNetworkGraph
+    @Default(.showDiskGraph) var showDiskGraph
     
+    var availableGraphs: [GraphData] {
+        var graphs: [GraphData] = []
+        
+        if showCpuGraph {
+            graphs.append(SingleGraphData(
+                title: "CPU",
+                value: statsManager.cpuUsageString,
+                data: statsManager.cpuHistory,
+                color: .blue,
+                icon: "cpu"
+            ))
+        }
+        
+        if showMemoryGraph {
+            graphs.append(SingleGraphData(
+                title: "Memory",
+                value: statsManager.memoryUsageString,
+                data: statsManager.memoryHistory,
+                color: .green,
+                icon: "memorychip"
+            ))
+        }
+        
+        if showGpuGraph {
+            graphs.append(SingleGraphData(
+                title: "GPU",
+                value: statsManager.gpuUsageString,
+                data: statsManager.gpuHistory,
+                color: .purple,
+                icon: "display"
+            ))
+        }
+        
+        if showNetworkGraph {
+            graphs.append(DualGraphData(
+                title: "Network",
+                positiveValue: String(format: "↓%.1f MB/s", statsManager.networkDownload),
+                negativeValue: String(format: "↑%.1f MB/s", statsManager.networkUpload),
+                positiveData: statsManager.networkDownloadHistory,
+                negativeData: statsManager.networkUploadHistory,
+                positiveColor: .orange,
+                negativeColor: .red,
+                color: .orange,
+                icon: "network"
+            ))
+        }
+        
+        if showDiskGraph {
+            graphs.append(DualGraphData(
+                title: "Disk",
+                positiveValue: String(format: "R %.1f MB/s", statsManager.diskRead),
+                negativeValue: String(format: "W %.1f MB/s", statsManager.diskWrite),
+                positiveData: statsManager.diskReadHistory,
+                negativeData: statsManager.diskWriteHistory,
+                positiveColor: .cyan,
+                negativeColor: .yellow,
+                color: .cyan,
+                icon: "internaldrive"
+            ))
+        }
+        
+        return graphs
+    }
+    
+    // New vertical expansion layout system
+    @ViewBuilder
+    var statsGridLayout: some View {
+        let graphCount = availableGraphs.count
+        
+        switch graphCount {
+        case 1...3:
+            // Single row for 1-3 graphs
+            HStack(spacing: 12) {
+                ForEach(0..<graphCount, id: \.self) { index in
+                    graphView(for: availableGraphs[index])
+                        .frame(maxWidth: .infinity)
+                        .transition(.asymmetric(
+                            insertion: .scale.combined(with: .opacity),
+                            removal: .scale.combined(with: .opacity)
+                        ))
+                }
+            }
+            .animation(.easeInOut(duration: 0.25), value: graphCount)
+            
+        case 4:
+            // 2x2 quadrants for 4 graphs
+            VStack(spacing: 12) {
+                HStack(spacing: 12) {
+                    graphView(for: availableGraphs[0])
+                        .frame(maxWidth: .infinity)
+                        .transition(.asymmetric(
+                            insertion: .scale.combined(with: .opacity),
+                            removal: .scale.combined(with: .opacity)
+                        ))
+                    graphView(for: availableGraphs[1])
+                        .frame(maxWidth: .infinity)
+                        .transition(.asymmetric(
+                            insertion: .scale.combined(with: .opacity),
+                            removal: .scale.combined(with: .opacity)
+                        ))
+                }
+                HStack(spacing: 12) {
+                    graphView(for: availableGraphs[2])
+                        .frame(maxWidth: .infinity)
+                        .transition(.asymmetric(
+                            insertion: .scale.combined(with: .opacity),
+                            removal: .scale.combined(with: .opacity)
+                        ))
+                    graphView(for: availableGraphs[3])
+                        .frame(maxWidth: .infinity)
+                        .transition(.asymmetric(
+                            insertion: .scale.combined(with: .opacity),
+                            removal: .scale.combined(with: .opacity)
+                        ))
+                }
+            }
+            .animation(.easeInOut(duration: 0.25), value: graphCount)
+            
+        case 5:
+            // 3 on top, 2 on bottom (taking half space each)
+            VStack(spacing: 12) {
+                // Top row: 3 graphs
+                HStack(spacing: 12) {
+                    graphView(for: availableGraphs[0])
+                        .frame(maxWidth: .infinity)
+                        .transition(.asymmetric(
+                            insertion: .scale.combined(with: .opacity),
+                            removal: .scale.combined(with: .opacity)
+                        ))
+                    graphView(for: availableGraphs[1])
+                        .frame(maxWidth: .infinity)
+                        .transition(.asymmetric(
+                            insertion: .scale.combined(with: .opacity),
+                            removal: .scale.combined(with: .opacity)
+                        ))
+                    graphView(for: availableGraphs[2])
+                        .frame(maxWidth: .infinity)
+                        .transition(.asymmetric(
+                            insertion: .scale.combined(with: .opacity),
+                            removal: .scale.combined(with: .opacity)
+                        ))
+                }
+                // Bottom row: 2 graphs centered
+                HStack(spacing: 12) {
+                    Spacer()
+                    graphView(for: availableGraphs[3])
+                        .frame(maxWidth: .infinity)
+                        .transition(.asymmetric(
+                            insertion: .scale.combined(with: .opacity),
+                            removal: .scale.combined(with: .opacity)
+                        ))
+                    graphView(for: availableGraphs[4])
+                        .frame(maxWidth: .infinity)
+                        .transition(.asymmetric(
+                            insertion: .scale.combined(with: .opacity),
+                            removal: .scale.combined(with: .opacity)
+                        ))
+                    Spacer()
+                }
+            }
+            .animation(.easeInOut(duration: 0.25), value: graphCount)
+            
+        default:
+            // Fallback for more than 5 graphs (shouldn't happen with current settings)
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: min(3, graphCount)), spacing: 12) {
+                ForEach(0..<graphCount, id: \.self) { index in
+                    graphView(for: availableGraphs[index])
+                        .transition(.asymmetric(
+                            insertion: .scale.combined(with: .opacity),
+                            removal: .scale.combined(with: .opacity)
+                        ))
+                }
+            }
+            .animation(.easeInOut(duration: 0.25), value: graphCount)
+        }
+    }
+    
+    // Helper function to create graph views
+    @ViewBuilder
+    func graphView(for graphData: GraphData) -> some View {
+        if let singleData = graphData as? SingleGraphData {
+            StatCard(
+                title: singleData.title,
+                value: singleData.value,
+                data: singleData.data,
+                color: singleData.color,
+                icon: singleData.icon
+            )
+        } else if let dualData = graphData as? DualGraphData {
+            DualStatCard(
+                title: dualData.title,
+                positiveValue: dualData.positiveValue,
+                negativeValue: dualData.negativeValue,
+                positiveData: dualData.positiveData,
+                negativeData: dualData.negativeData,
+                positiveColor: dualData.positiveColor,
+                negativeColor: dualData.negativeColor,
+                icon: dualData.icon
+            )
+        }
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             if !enableStatsFeature {
@@ -33,42 +277,38 @@ struct NotchStatsView: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .padding()
+            } else if availableGraphs.isEmpty {
+                // No graphs enabled state
+                VStack(spacing: 12) {
+                    Image(systemName: "chart.xyaxis.line")
+                        .font(.system(size: 40))
+                        .foregroundColor(.secondary)
+                    
+                    Text("No Graphs Enabled")
+                        .font(.headline)
+                        .foregroundColor(.primary)
+                    
+                    Text("Enable graph visibility in Settings → Stats to view performance data.")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .padding()
             } else {
-                // Stats content - use full width and height
+                // Stats content with vertical expansion layout
                 ZStack(alignment: .topTrailing) {
                     VStack(spacing: 12) {
-                        // Stats Grid - use more space
-                        HStack(spacing: 12) {
-                            // CPU Usage
-                            StatCard(
-                                title: "CPU",
-                                value: statsManager.cpuUsageString,
-                                data: statsManager.cpuHistory,
-                                color: .blue,
-                                icon: "cpu"
-                            )
-                            
-                            // Memory Usage
-                            StatCard(
-                                title: "Memory",
-                                value: statsManager.memoryUsageString,
-                                data: statsManager.memoryHistory,
-                                color: .green,
-                                icon: "memorychip"
-                            )
-                            
-                            // GPU Usage
-                            StatCard(
-                                title: "GPU",
-                                value: statsManager.gpuUsageString,
-                                data: statsManager.gpuHistory,
-                                color: .purple,
-                                icon: "display"
-                            )
-                        }
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        // New vertical expansion layout
+                        statsGridLayout
                     }
                     .padding(16)
+                    .animation(.easeInOut(duration: 0.25), value: availableGraphs.count)
+                    .transition(.asymmetric(
+                        insertion: .scale.combined(with: .opacity),
+                        removal: .scale.combined(with: .opacity)
+                    ))
                     
                     // Live indicator and controls in top-right corner
                     HStack(spacing: 8) {
@@ -90,7 +330,7 @@ struct NotchStatsView: View {
                             }
                             
                             Button("Clear") {
-                                clearStatsData()
+                                statsManager.clearHistory()
                             }
                             .buttonStyle(.bordered)
                             .disabled(statsManager.isMonitoring)
@@ -126,12 +366,6 @@ struct NotchStatsView: View {
             // Keep monitoring running when tab is not visible
         }
     }
-    
-    private func clearStatsData() {
-        statsManager.cpuHistory = Array(repeating: 0.0, count: 30)
-        statsManager.memoryHistory = Array(repeating: 0.0, count: 30)
-        statsManager.gpuHistory = Array(repeating: 0.0, count: 30)
-    }
 }
 
 struct StatCard: View {
@@ -162,10 +396,71 @@ struct StatCard: View {
                 .font(.title3)
                 .fontWeight(.bold)
                 .foregroundColor(.primary)
+                .frame(height: 22) // Match the height of dual values in DualStatCard
             
             // Mini graph - use more height
             MiniGraph(data: data, color: color)
                 .frame(height: 50)
+        }
+        .padding(10)
+        .background(Color(NSColor.controlBackgroundColor).opacity(0.5))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+}
+
+struct DualStatCard: View {
+    let title: String
+    let positiveValue: String
+    let negativeValue: String
+    let positiveData: [Double]
+    let negativeData: [Double]
+    let positiveColor: Color
+    let negativeColor: Color
+    let icon: String
+    
+    var body: some View {
+        VStack(spacing: 6) {
+            // Header
+            HStack(spacing: 4) {
+                Image(systemName: icon)
+                    .foregroundColor(positiveColor)
+                    .font(.caption2)
+                
+                Text(title)
+                    .font(.caption2)
+                    .fontWeight(.medium)
+                    .foregroundColor(.secondary)
+                
+                Spacer()
+            }
+            
+            // Dual values - horizontal layout to match single value height
+            HStack(spacing: 8) {
+                Text(positiveValue)
+                    .font(.caption)
+                    .fontWeight(.semibold)
+                    .foregroundColor(positiveColor)
+                
+                Text("•")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                
+                Text(negativeValue)
+                    .font(.caption)
+                    .fontWeight(.semibold)
+                    .foregroundColor(negativeColor)
+            }
+            .frame(height: 22) // Match the height of .title3 text in StatCard
+            
+            // Dual quadrant graph
+            DualQuadrantGraph(
+                positiveData: positiveData,
+                negativeData: negativeData,
+                positiveColor: positiveColor,
+                negativeColor: negativeColor
+            )
+            .frame(height: 50)
         }
         .padding(10)
         .background(Color(NSColor.controlBackgroundColor).opacity(0.5))
@@ -225,6 +520,123 @@ struct MiniGraph: View {
                     endPoint: .bottom
                 )
             )
+        }
+    }
+}
+
+struct DualQuadrantGraph: View {
+    let positiveData: [Double]
+    let negativeData: [Double]
+    let positiveColor: Color
+    let negativeColor: Color
+    
+    var body: some View {
+        GeometryReader { geometry in
+            let maxPositive = positiveData.max() ?? 1.0
+            let maxNegative = negativeData.max() ?? 1.0
+            let maxValue = max(maxPositive, maxNegative)
+            
+            let normalizedPositive = maxValue > 0 ? positiveData.map { $0 / maxValue } : positiveData
+            let normalizedNegative = maxValue > 0 ? negativeData.map { $0 / maxValue } : negativeData
+            
+            let centerY = geometry.size.height / 2
+            
+            ZStack {
+                // Center dividing line
+                Path { path in
+                    path.move(to: CGPoint(x: 0, y: centerY))
+                    path.addLine(to: CGPoint(x: geometry.size.width, y: centerY))
+                }
+                .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
+                
+                // Positive quadrant (upper half)
+                Path { path in
+                    guard !normalizedPositive.isEmpty else { return }
+                    
+                    let stepX = geometry.size.width / CGFloat(normalizedPositive.count - 1)
+                    
+                    for (index, value) in normalizedPositive.enumerated() {
+                        let x = CGFloat(index) * stepX
+                        let y = centerY - (centerY * CGFloat(value)) // Above center
+                        
+                        if index == 0 {
+                            path.move(to: CGPoint(x: x, y: y))
+                        } else {
+                            path.addLine(to: CGPoint(x: x, y: y))
+                        }
+                    }
+                }
+                .stroke(positiveColor, lineWidth: 2)
+                
+                // Positive fill
+                Path { path in
+                    guard !normalizedPositive.isEmpty else { return }
+                    
+                    let stepX = geometry.size.width / CGFloat(normalizedPositive.count - 1)
+                    
+                    path.move(to: CGPoint(x: 0, y: centerY))
+                    
+                    for (index, value) in normalizedPositive.enumerated() {
+                        let x = CGFloat(index) * stepX
+                        let y = centerY - (centerY * CGFloat(value))
+                        path.addLine(to: CGPoint(x: x, y: y))
+                    }
+                    
+                    path.addLine(to: CGPoint(x: geometry.size.width, y: centerY))
+                    path.closeSubpath()
+                }
+                .fill(
+                    LinearGradient(
+                        gradient: Gradient(colors: [positiveColor.opacity(0.3), positiveColor.opacity(0.1)]),
+                        startPoint: .top,
+                        endPoint: .center
+                    )
+                )
+                
+                // Negative quadrant (lower half)
+                Path { path in
+                    guard !normalizedNegative.isEmpty else { return }
+                    
+                    let stepX = geometry.size.width / CGFloat(normalizedNegative.count - 1)
+                    
+                    for (index, value) in normalizedNegative.enumerated() {
+                        let x = CGFloat(index) * stepX
+                        let y = centerY + (centerY * CGFloat(value)) // Below center
+                        
+                        if index == 0 {
+                            path.move(to: CGPoint(x: x, y: y))
+                        } else {
+                            path.addLine(to: CGPoint(x: x, y: y))
+                        }
+                    }
+                }
+                .stroke(negativeColor, lineWidth: 2)
+                
+                // Negative fill
+                Path { path in
+                    guard !normalizedNegative.isEmpty else { return }
+                    
+                    let stepX = geometry.size.width / CGFloat(normalizedNegative.count - 1)
+                    
+                    path.move(to: CGPoint(x: 0, y: centerY))
+                    
+                    for (index, value) in normalizedNegative.enumerated() {
+                        let x = CGFloat(index) * stepX
+                        let y = centerY + (centerY * CGFloat(value))
+                        path.addLine(to: CGPoint(x: x, y: y))
+                    }
+                    
+                    path.addLine(to: CGPoint(x: geometry.size.width, y: centerY))
+                    path.closeSubpath()
+                }
+                .fill(
+                    LinearGradient(
+                        gradient: Gradient(colors: [negativeColor.opacity(0.3), negativeColor.opacity(0.1)]),
+                        startPoint: .bottom,
+                        endPoint: .center
+                    )
+                )
+            }
         }
     }
 }

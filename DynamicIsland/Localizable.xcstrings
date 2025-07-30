@@ -38,6 +38,9 @@
     "%lld%%" : {
 
     },
+    "•" : {
+
+    },
     "• Bug fixes" : {
 
     },
@@ -368,6 +371,12 @@
     "Disabled" : {
 
     },
+    "Disk Read" : {
+
+    },
+    "Disk Write" : {
+
+    },
     "Download" : {
 
     },
@@ -413,6 +422,9 @@
     "dynamic.island" : {
 
     },
+    "Each graph can be individually enabled or disabled. Network activity shows download/upload speeds, and disk I/O shows read/write speeds." : {
+
+    },
     "Easily copy, store, and manage your most-used content. Upgrade now for advanced features like multi-item storage and quick access!" : {
 
     },
@@ -432,6 +444,9 @@
           }
         }
       }
+    },
+    "Enable graph visibility in Settings → Stats to view performance data." : {
+
     },
     "Enable haptics" : {
       "extractionState" : "stale",
@@ -531,6 +546,9 @@
     "Gradient" : {
 
     },
+    "Graph Visibility" : {
+
+    },
     "Hide DynamicIsland Options" : {
 
     },
@@ -585,6 +603,9 @@
 
     },
     "Live" : {
+
+    },
+    "Live Performance Data" : {
 
     },
     "Lottie JSON URL" : {
@@ -707,6 +728,12 @@
     "Need Restart" : {
 
     },
+    "Network Download" : {
+
+    },
+    "Network Upload" : {
+
+    },
     "Never hide" : {
 
     },
@@ -737,6 +764,9 @@
       }
     },
     "No extension installed" : {
+
+    },
+    "No Graphs Enabled" : {
 
     },
     "Non-notch display height" : {
@@ -1033,9 +1063,6 @@
     "System features" : {
 
     },
-    "System Performance" : {
-
-    },
     "The clipboard icon appears in the header next to the settings gear when enabled. Use the global shortcut Cmd+Shift+V or click the icon to access history." : {
 
     },
@@ -1119,7 +1146,10 @@
     "What's New" : {
 
     },
-    "When enabled, the Stats tab will display real-time CPU, Memory, and GPU usage graphs. This feature requires system permissions and may use additional battery." : {
+    "When enabled, the Stats tab will display real-time system performance graphs. This feature requires system permissions and may use additional battery." : {
+
+    },
+    "With %lld graphs enabled, the Dynamic Island will expand horizontally to accommodate all graphs in a single row." : {
 
     },
     "You can now enjoy the app. If you want to tweak things further, you can always visit the settings." : {
