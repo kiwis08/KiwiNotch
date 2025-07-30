@@ -1292,6 +1292,15 @@ struct Shortcuts: View {
 struct Stats: View {
     @ObservedObject var statsManager = StatsManager.shared
     @Default(.enableStatsFeature) var enableStatsFeature
+    @Default(.showCpuGraph) var showCpuGraph
+    @Default(.showMemoryGraph) var showMemoryGraph
+    @Default(.showGpuGraph) var showGpuGraph
+    @Default(.showNetworkGraph) var showNetworkGraph
+    @Default(.showDiskGraph) var showDiskGraph
+    
+    var enabledGraphsCount: Int {
+        [showCpuGraph, showMemoryGraph, showGpuGraph, showNetworkGraph, showDiskGraph].filter { $0 }.count
+    }
     
     var body: some View {
         Form {
@@ -1307,13 +1316,35 @@ struct Stats: View {
             } header: {
                 Text("General")
             } footer: {
-                Text("When enabled, the Stats tab will display real-time CPU, Memory, and GPU usage graphs. This feature requires system permissions and may use additional battery.")
+                Text("When enabled, the Stats tab will display real-time system performance graphs. This feature requires system permissions and may use additional battery.")
                     .multilineTextAlignment(.trailing)
                     .foregroundStyle(.secondary)
                     .font(.caption)
             }
             
             if enableStatsFeature {
+                Section {
+                    Defaults.Toggle("CPU Usage", key: .showCpuGraph)
+                    Defaults.Toggle("Memory Usage", key: .showMemoryGraph) 
+                    Defaults.Toggle("GPU Usage", key: .showGpuGraph)
+                    Defaults.Toggle("Network Activity", key: .showNetworkGraph)
+                    Defaults.Toggle("Disk I/O", key: .showDiskGraph)
+                } header: {
+                    Text("Graph Visibility")
+                } footer: {
+                    if enabledGraphsCount >= 4 {
+                        Text("With \(enabledGraphsCount) graphs enabled, the Dynamic Island will expand horizontally to accommodate all graphs in a single row.")
+                            .multilineTextAlignment(.trailing)
+                            .foregroundStyle(.secondary)
+                            .font(.caption)
+                    } else {
+                        Text("Each graph can be individually enabled or disabled. Network activity shows download/upload speeds, and disk I/O shows read/write speeds.")
+                            .multilineTextAlignment(.trailing)
+                            .foregroundStyle(.secondary)
+                            .font(.caption)
+                    }
+                }
+                
                 Section {
                     HStack {
                         Text("Monitoring Status")
@@ -1328,25 +1359,63 @@ struct Stats: View {
                     }
                     
                     if statsManager.isMonitoring {
-                        HStack {
-                            Text("CPU Usage")
-                            Spacer()
-                            Text(statsManager.cpuUsageString)
-                                .foregroundStyle(.secondary)
+                        if showCpuGraph {
+                            HStack {
+                                Text("CPU Usage")
+                                Spacer()
+                                Text(statsManager.cpuUsageString)
+                                    .foregroundStyle(.secondary)
+                            }
                         }
                         
-                        HStack {
-                            Text("Memory Usage")
-                            Spacer()
-                            Text(statsManager.memoryUsageString)
-                                .foregroundStyle(.secondary)
+                        if showMemoryGraph {
+                            HStack {
+                                Text("Memory Usage")
+                                Spacer()
+                                Text(statsManager.memoryUsageString)
+                                    .foregroundStyle(.secondary)
+                            }
                         }
                         
-                        HStack {
-                            Text("GPU Usage")
-                            Spacer()
-                            Text(statsManager.gpuUsageString)
-                                .foregroundStyle(.secondary)
+                        if showGpuGraph {
+                            HStack {
+                                Text("GPU Usage")
+                                Spacer()
+                                Text(statsManager.gpuUsageString)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                        
+                        if showNetworkGraph {
+                            HStack {
+                                Text("Network Download")
+                                Spacer()
+                                Text(String(format: "%.1f MB/s", statsManager.networkDownload))
+                                    .foregroundStyle(.secondary)
+                            }
+                            
+                            HStack {
+                                Text("Network Upload")
+                                Spacer()
+                                Text(String(format: "%.1f MB/s", statsManager.networkUpload))
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                        
+                        if showDiskGraph {
+                            HStack {
+                                Text("Disk Read")
+                                Spacer()
+                                Text(String(format: "%.1f MB/s", statsManager.diskRead))
+                                    .foregroundStyle(.secondary)
+                            }
+                            
+                            HStack {
+                                Text("Disk Write")
+                                Spacer()
+                                Text(String(format: "%.1f MB/s", statsManager.diskWrite))
+                                    .foregroundStyle(.secondary)
+                            }
                         }
                         
                         HStack {
@@ -1357,7 +1426,7 @@ struct Stats: View {
                         }
                     }
                 } header: {
-                    Text("System Performance")
+                    Text("Live Performance Data")
                 }
                 
                 Section {
@@ -1375,7 +1444,7 @@ struct Stats: View {
                         Spacer()
                         
                         Button("Clear Data") {
-                            clearStatsData()
+                            statsManager.clearHistory()
                         }
                         .buttonStyle(.bordered)
                         .disabled(statsManager.isMonitoring)
@@ -1386,12 +1455,6 @@ struct Stats: View {
             }
         }
         .navigationTitle("Stats")
-    }
-    
-    private func clearStatsData() {
-        statsManager.cpuHistory = Array(repeating: 0.0, count: 30)
-        statsManager.memoryHistory = Array(repeating: 0.0, count: 30) 
-        statsManager.gpuHistory = Array(repeating: 0.0, count: 30)
     }
 }
 

@@ -10,6 +10,8 @@ import Combine
 import SwiftUI
 import IOKit
 import IOKit.ps
+import Darwin
+import Network
 
 class StatsManager: ObservableObject {
     // MARK: - Properties
@@ -19,15 +21,30 @@ class StatsManager: ObservableObject {
     @Published var cpuUsage: Double = 0.0
     @Published var memoryUsage: Double = 0.0
     @Published var gpuUsage: Double = 0.0
+    @Published var networkDownload: Double = 0.0 // MB/s
+    @Published var networkUpload: Double = 0.0   // MB/s
+    @Published var diskRead: Double = 0.0        // MB/s
+    @Published var diskWrite: Double = 0.0       // MB/s
     @Published var lastUpdated: Date = .distantPast
     
     // Historical data for graphs (last 30 data points)
     @Published var cpuHistory: [Double] = []
     @Published var memoryHistory: [Double] = []
     @Published var gpuHistory: [Double] = []
+    @Published var networkDownloadHistory: [Double] = []
+    @Published var networkUploadHistory: [Double] = []
+    @Published var diskReadHistory: [Double] = []
+    @Published var diskWriteHistory: [Double] = []
     
     private var monitoringTimer: Timer?
     private let maxHistoryPoints = 30
+    
+    // Network monitoring state
+    private var previousNetworkStats: (bytesIn: UInt64, bytesOut: UInt64) = (0, 0)
+    private var previousTimestamp: Date = Date()
+    
+    // Disk monitoring state  
+    private var previousDiskStats: (bytesRead: UInt64, bytesWritten: UInt64) = (0, 0)
     
     // MARK: - Initialization
     private init() {
@@ -35,6 +52,19 @@ class StatsManager: ObservableObject {
         cpuHistory = Array(repeating: 0.0, count: maxHistoryPoints)
         memoryHistory = Array(repeating: 0.0, count: maxHistoryPoints)
         gpuHistory = Array(repeating: 0.0, count: maxHistoryPoints)
+        networkDownloadHistory = Array(repeating: 0.0, count: maxHistoryPoints)
+        networkUploadHistory = Array(repeating: 0.0, count: maxHistoryPoints)
+        diskReadHistory = Array(repeating: 0.0, count: maxHistoryPoints)
+        diskWriteHistory = Array(repeating: 0.0, count: maxHistoryPoints)
+        
+        // Initialize baseline network stats
+        let initialStats = getNetworkStats()
+        previousNetworkStats = initialStats
+        previousTimestamp = Date()
+        
+        // Initialize baseline disk stats
+        let initialDiskStats = getDiskStats()
+        previousDiskStats = initialDiskStats
     }
     
     deinit {
@@ -73,16 +103,48 @@ class StatsManager: ObservableObject {
         let newMemoryUsage = getMemoryUsage()
         let newGpuUsage = getGPUUsage()
         
+        // Calculate network speeds
+        let currentNetworkStats = getNetworkStats()
+        let currentTime = Date()
+        let timeInterval = currentTime.timeIntervalSince(previousTimestamp)
+        
+        let bytesDownloaded = currentNetworkStats.bytesIn - previousNetworkStats.bytesIn
+        let bytesUploaded = currentNetworkStats.bytesOut - previousNetworkStats.bytesOut
+        
+        let downloadSpeed = timeInterval > 0 ? Double(bytesDownloaded) / timeInterval / 1_048_576 : 0.0 // Convert to MB/s
+        let uploadSpeed = timeInterval > 0 ? Double(bytesUploaded) / timeInterval / 1_048_576 : 0.0 // Convert to MB/s
+        
+        // Calculate disk speeds
+        let currentDiskStats = getDiskStats()
+        let bytesRead = currentDiskStats.bytesRead - previousDiskStats.bytesRead
+        let bytesWritten = currentDiskStats.bytesWritten - previousDiskStats.bytesWritten
+        
+        let readSpeed = timeInterval > 0 ? Double(bytesRead) / timeInterval / 1_048_576 : 0.0 // Convert to MB/s
+        let writeSpeed = timeInterval > 0 ? Double(bytesWritten) / timeInterval / 1_048_576 : 0.0 // Convert to MB/s
+        
         // Update current values
         cpuUsage = newCpuUsage
         memoryUsage = newMemoryUsage
         gpuUsage = newGpuUsage
+        networkDownload = max(0.0, downloadSpeed)
+        networkUpload = max(0.0, uploadSpeed)
+        diskRead = max(0.0, readSpeed)
+        diskWrite = max(0.0, writeSpeed)
         lastUpdated = Date()
         
         // Update history arrays (sliding window)
         updateHistory(value: newCpuUsage, history: &cpuHistory)
         updateHistory(value: newMemoryUsage, history: &memoryHistory)
         updateHistory(value: newGpuUsage, history: &gpuHistory)
+        updateHistory(value: networkDownload, history: &networkDownloadHistory)
+        updateHistory(value: networkUpload, history: &networkUploadHistory)
+        updateHistory(value: readSpeed, history: &diskReadHistory)
+        updateHistory(value: writeSpeed, history: &diskWriteHistory)
+        
+        // Update previous stats for next calculation
+        previousNetworkStats = currentNetworkStats
+        previousDiskStats = currentDiskStats
+        previousTimestamp = currentTime
     }
     
     private func updateHistory(value: Double, history: inout [Double]) {
@@ -159,6 +221,87 @@ class StatsManager: ObservableObject {
         return min(100.0, max(0.0, simulatedUsage))
     }
     
+    private func getNetworkStats() -> (bytesIn: UInt64, bytesOut: UInt64) {
+        // Use BSD sockets to get network interface statistics
+        var totalBytesIn: UInt64 = 0
+        var totalBytesOut: UInt64 = 0
+        
+        var ifaddrs: UnsafeMutablePointer<ifaddrs>?
+        guard getifaddrs(&ifaddrs) == 0 else {
+            return (totalBytesIn, totalBytesOut)
+        }
+        
+        defer { freeifaddrs(ifaddrs) }
+        
+        var ptr = ifaddrs
+        while ptr != nil {
+            defer { ptr = ptr?.pointee.ifa_next }
+            
+            guard let interface = ptr?.pointee,
+                  interface.ifa_addr.pointee.sa_family == UInt8(AF_LINK) else {
+                continue
+            }
+            
+            let name = String(cString: interface.ifa_name)
+            // Skip loopback and non-active interfaces
+            guard !name.hasPrefix("lo") && !name.hasPrefix("gif") && !name.hasPrefix("stf") else {
+                continue
+            }
+            
+            if let data = interface.ifa_data?.assumingMemoryBound(to: if_data.self) {
+                totalBytesIn += UInt64(data.pointee.ifi_ibytes)
+                totalBytesOut += UInt64(data.pointee.ifi_obytes)
+            }
+        }
+        
+        return (totalBytesIn, totalBytesOut)
+    }
+    
+    private func getDiskStats() -> (bytesRead: UInt64, bytesWritten: UInt64) {
+        // Use IOKit to get disk I/O statistics
+        var totalBytesRead: UInt64 = 0
+        var totalBytesWritten: UInt64 = 0
+        
+        // Create matching dictionary for IOService
+        let matchingDict = IOServiceMatching("IOBlockStorageDriver")
+        
+        var iterator: io_iterator_t = 0
+        let result = IOServiceGetMatchingServices(kIOMasterPortDefault, matchingDict, &iterator)
+        
+        guard result == KERN_SUCCESS else {
+            return (totalBytesRead, totalBytesWritten)
+        }
+        
+        defer { IOObjectRelease(iterator) }
+        
+        var service: io_registry_entry_t = IOIteratorNext(iterator)
+        while service != 0 {
+            defer {
+                IOObjectRelease(service)
+                service = IOIteratorNext(iterator)
+            }
+            
+            var properties: Unmanaged<CFMutableDictionary>?
+            let propertiesResult = IORegistryEntryCreateCFProperties(service, &properties, kCFAllocatorDefault, 0)
+            
+            guard propertiesResult == KERN_SUCCESS,
+                  let props = properties?.takeRetainedValue() as? [String: Any],
+                  let statistics = props["Statistics"] as? [String: Any] else {
+                continue
+            }
+            
+            if let bytesRead = statistics["Bytes read"] as? UInt64 {
+                totalBytesRead += bytesRead
+            }
+            
+            if let bytesWritten = statistics["Bytes written"] as? UInt64 {
+                totalBytesWritten += bytesWritten
+            }
+        }
+        
+        return (totalBytesRead, totalBytesWritten)
+    }
+    
     // MARK: - Computed Properties for UI
     var cpuUsageString: String {
         return String(format: "%.1f%%", cpuUsage)
@@ -170,6 +313,22 @@ class StatsManager: ObservableObject {
     
     var gpuUsageString: String {
         return String(format: "%.1f%%", gpuUsage)
+    }
+    
+    var networkDownloadString: String {
+        return String(format: "%.1f MB/s", networkDownload)
+    }
+    
+    var networkUploadString: String {
+        return String(format: "%.1f MB/s", networkUpload)
+    }
+    
+    var diskReadString: String {
+        return String(format: "%.1f MB/s", diskRead)
+    }
+    
+    var diskWriteString: String {
+        return String(format: "%.1f MB/s", diskWrite)
     }
     
     var maxCpuUsage: Double {
@@ -200,5 +359,16 @@ class StatsManager: ObservableObject {
         let nonZeroValues = gpuHistory.filter { $0 > 0 }
         guard !nonZeroValues.isEmpty else { return 0.0 }
         return nonZeroValues.reduce(0, +) / Double(nonZeroValues.count)
+    }
+    
+    // MARK: - Clear History Method
+    func clearHistory() {
+        cpuHistory = Array(repeating: 0.0, count: maxHistoryPoints)
+        memoryHistory = Array(repeating: 0.0, count: maxHistoryPoints)
+        gpuHistory = Array(repeating: 0.0, count: maxHistoryPoints)
+        networkDownloadHistory = Array(repeating: 0.0, count: maxHistoryPoints)
+        networkUploadHistory = Array(repeating: 0.0, count: maxHistoryPoints)
+        diskReadHistory = Array(repeating: 0.0, count: maxHistoryPoints)
+        diskWriteHistory = Array(repeating: 0.0, count: maxHistoryPoints)
     }
 }

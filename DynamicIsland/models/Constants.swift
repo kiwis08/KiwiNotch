@@ -156,6 +156,11 @@ extension Defaults.Keys {
     
     // MARK: Stats Feature
     static let enableStatsFeature = Key<Bool>("enableStatsFeature", default: false)
+    static let showCpuGraph = Key<Bool>("showCpuGraph", default: true)
+    static let showMemoryGraph = Key<Bool>("showMemoryGraph", default: true)
+    static let showGpuGraph = Key<Bool>("showGpuGraph", default: true)
+    static let showNetworkGraph = Key<Bool>("showNetworkGraph", default: false)
+    static let showDiskGraph = Key<Bool>("showDiskGraph", default: false)
     
     // MARK: Timer Feature
     static let enableTimerFeature = Key<Bool>("enableTimerFeature", default: true)

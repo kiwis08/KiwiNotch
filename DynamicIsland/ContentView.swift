@@ -21,6 +21,31 @@ struct ContentView: View {
     @ObservedObject var musicManager = MusicManager.shared
     @ObservedObject var timerManager = TimerManager.shared
     @ObservedObject var batteryModel = BatteryStatusViewModel.shared
+    @ObservedObject var statsManager = StatsManager.shared
+    
+    @Default(.enableStatsFeature) var enableStatsFeature
+    @Default(.showCpuGraph) var showCpuGraph
+    @Default(.showMemoryGraph) var showMemoryGraph
+    @Default(.showGpuGraph) var showGpuGraph
+    @Default(.showNetworkGraph) var showNetworkGraph
+    @Default(.showDiskGraph) var showDiskGraph
+    
+    var dynamicNotchSize: CGSize {
+        // Only apply dynamic sizing when on stats tab and stats are enabled
+        guard coordinator.currentView == .stats && enableStatsFeature else {
+            return openNotchSize
+        }
+        
+        let enabledGraphsCount = [showCpuGraph, showMemoryGraph, showGpuGraph, showNetworkGraph, showDiskGraph].filter { $0 }.count
+        
+        // If 4+ graphs are enabled, increase width
+        if enabledGraphsCount >= 4 {
+            let extraWidth: CGFloat = CGFloat(enabledGraphsCount - 3) * 120
+            return CGSize(width: openNotchSize.width + extraWidth, height: openNotchSize.height)
+        }
+        
+        return openNotchSize
+    }
     
 
     @State private var isHovering: Bool = false
@@ -173,7 +198,7 @@ struct ContentView: View {
 //                    .keyboardShortcut("E", modifiers: .command)
                 }
         }
-        .frame(maxWidth: openNotchSize.width, maxHeight: openNotchSize.height, alignment: .top)
+        .frame(maxWidth: dynamicNotchSize.width, maxHeight: dynamicNotchSize.height, alignment: .top)
         .shadow(color: ((vm.notchState == .open || isHovering) && Defaults[.enableShadow]) ? .black.opacity(0.6) : .clear, radius: Defaults[.cornerRadiusScaling] ? 10 : 5)
         .background(dragDetector)
         .environmentObject(vm)
