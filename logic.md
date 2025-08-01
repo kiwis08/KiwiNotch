@@ -80,11 +80,46 @@ This means the content already knows how to size itself. The window can stay at 
 
 This eliminates the timing issue completely because the window never changes size after initial creation.
 
-## REAL ROOT CAUSE FOUND AND FIXED
+## CRITICAL DISCOVERY - Clipboard is NOT a Tab View
 
-### The ACTUAL Problem: Window Creation with Wrong Size
+### Major Finding
+**The `.clipboard` case doesn't exist in `NotchViews` enum!**
 
-The issue was NOT positioning logic - it was that **`createDynamicIslandWindow()` always created windows with `openNotchSize`** instead of the current required size!
+```swift
+public enum NotchViews {
+    case home
+    case shelf
+    case timer
+    case stats
+}
+```
+
+### What This Means
+- All my protective logic for `coordinator.currentView == .clipboard` is **ineffective**
+- Clipboard functionality works differently - likely as a popover or overlay, not a tab
+- The hover collapse issue is NOT about tab transitions but about popover interactions
+
+### Investigation Results
+1. **ContentView switch statement** only handles: `.home`, `.shelf`, `.timer`, `.stats`
+2. **No clipboard tab content rendering** in the main view switch
+3. **Clipboard must be implemented as popover/overlay** system
+
+### New Hypothesis
+The clipboard "area" the user refers to is likely:
+1. **ClipboardHistoryPopover** - a popover that opens over the Dynamic Island
+2. **ClipboardManager integration** - clipboard content shown in existing tabs
+3. **Overlay system** - clipboard UI overlaid on top of main content
+
+### Critical Issue Identified
+My previous fix added protections for `.clipboard` view that **DOESN'T EXIST**, meaning:
+- Protections are not working
+- Hover collapse still happening during clipboard interactions
+- Need to find actual clipboard interaction boundaries
+
+### Next Steps
+1. **Find real clipboard implementation** - how is clipboard content actually shown?
+2. **Identify clipboard hover boundaries** - what UI element represents "clipboard area"?
+3. **Fix actual interaction conflicts** - coordinate between clipboard popover and main hover logic
 
 #### When This Caused Problems:
 
