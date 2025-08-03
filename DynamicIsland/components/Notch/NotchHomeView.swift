@@ -288,39 +288,11 @@ struct MusicSliderView: View {
     var onValueChange: (Double) -> Void
 
     var currentElapsedTime: Double {
-        // Don't update slider while user is dragging
-        guard !dragging else { return sliderValue }
-        
-        // If not playing, use the current elapsed time from controller
-        guard isPlaying else { return elapsedTime }
-        
-        // For playing media, calculate real-time progress
-        let timeDiff = currentDate.timeIntervalSince(timestampDate)
-        
-        // Use real-time calculation for positive time differences with reasonable bounds
-        // This provides smooth progression for all media sources
-        if timeDiff >= 0 && timeDiff < 30.0 && playbackRate > 0 {
-            let projectedTime = elapsedTime + (timeDiff * playbackRate)
-            let clampedTime = min(projectedTime, duration)
-            
-            // Ensure we don't go backwards unless there's a significant jump
-            if clampedTime >= sliderValue || abs(clampedTime - sliderValue) > 2.0 {
-                return clampedTime
-            } else {
-                return sliderValue
-            }
-        } else {
-            // For very stale timestamps or negative differences, use controller time
-            // but only if it makes sense relative to current slider position
-            let controllerTime = min(elapsedTime, duration)
-            
-            // Prevent backwards jumps unless there's a significant change (track change, seek)
-            if controllerTime >= sliderValue || abs(controllerTime - sliderValue) > 5.0 {
-                return controllerTime
-            } else {
-                return sliderValue
-            }
-        }
+        // A small buffer is needed to ensure a meaningful difference between the two dates
+        guard !dragging, timestampDate.timeIntervalSince(lastDragged) > -1 else { return sliderValue }
+        let timeDifference = isPlaying ? currentDate.timeIntervalSince(timestampDate) : 0
+        let elapsed = elapsedTime + (timeDifference * playbackRate)
+        return min(elapsed, duration)
     }
 
     var body: some View {
@@ -348,19 +320,6 @@ struct MusicSliderView: View {
         }
         .onChange(of: currentDate) {
             sliderValue = currentElapsedTime
-        }
-        .onChange(of: elapsedTime) {
-            // Update slider when media changes (e.g., track changes, seeking)
-            // But only if we're not dragging and the difference is significant
-            if !dragging && abs(elapsedTime - sliderValue) > 1.0 {
-                sliderValue = elapsedTime
-            }
-        }
-        .onChange(of: duration) {
-            // Handle track changes - reset slider if duration changes significantly
-            if !dragging && sliderValue > duration {
-                sliderValue = min(elapsedTime, duration)
-            }
         }
     }
 
