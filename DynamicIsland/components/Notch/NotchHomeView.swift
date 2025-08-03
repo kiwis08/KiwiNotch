@@ -137,7 +137,7 @@ struct MusicControlsView: View {
     }
 
     private var musicSlider: some View {
-        TimelineView(.animation(minimumInterval: musicManager.playbackRate > 0 ? 0.1 : nil)) { timeline in
+        TimelineView(.animation(minimumInterval: 0.05)) { timeline in
             MusicSliderView(
                 sliderValue: $sliderValue,
                 duration: $musicManager.songDuration,
@@ -277,11 +277,25 @@ struct MusicSliderView: View {
     var onValueChange: (Double) -> Void
 
     var currentElapsedTime: Double {
-        // A small buffer is needed to ensure a meaningful difference between the two dates
-        guard !dragging, timestampDate.timeIntervalSince(lastDragged) > -0.0001, (timestampDate > lastUpdated || ignoreLastUpdated) else { return sliderValue }
-        let timeDifference = isPlaying ? currentDate.timeIntervalSince(timestampDate) : 0
-        let elapsed = elapsedTime + (timeDifference * playbackRate)
-        return min(elapsed, duration)
+        // Don't update slider while user is dragging
+        guard !dragging else { return sliderValue }
+        
+        // If not playing, use the current elapsed time from controller
+        guard isPlaying else { return elapsedTime }
+        
+        // For playing media, calculate real-time progress
+        // Use a more permissive approach for web players
+        let timeDiff = currentDate.timeIntervalSince(timestampDate)
+        
+        // Only use timestamp calculation if we have recent data (within 5 seconds)
+        // This helps with web players that don't update timestamps frequently
+        if timeDiff >= 0 && timeDiff < 5.0 && playbackRate > 0 {
+            let projectedTime = elapsedTime + (timeDiff * playbackRate)
+            return min(projectedTime, duration)
+        } else {
+            // Fallback to controller-provided elapsed time for stale or invalid timestamps
+            return min(elapsedTime, duration)
+        }
     }
 
     var body: some View {
