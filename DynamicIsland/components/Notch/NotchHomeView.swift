@@ -97,6 +97,7 @@ struct AlbumArtView: View {
 
 struct MusicControlsView: View {
     @ObservedObject var musicManager = MusicManager.shared
+    @EnvironmentObject var vm: DynamicIslandViewModel
     @State private var sliderValue: Double = 0
     @State private var dragging: Bool = false
     @State private var lastDragged: Date = .distantPast
@@ -108,6 +109,16 @@ struct MusicControlsView: View {
         }
         .buttonStyle(PlainButtonStyle())
         .frame(minWidth: Defaults[.showMirror] && Defaults[.showCalendar] ? 140 : 180)
+        .onAppear {
+            // Initialize slider value when view appears
+            sliderValue = musicManager.elapsedTime
+        }
+        .onChange(of: vm.notchState) { _, newState in
+            // Reset slider value when notch opens to prevent stuck state
+            if newState == .open && !dragging {
+                sliderValue = musicManager.elapsedTime
+            }
+        }
     }
 
     private var songInfoAndSlider: some View {
@@ -284,17 +295,31 @@ struct MusicSliderView: View {
         guard isPlaying else { return elapsedTime }
         
         // For playing media, calculate real-time progress
-        // Use a more permissive approach for web players
         let timeDiff = currentDate.timeIntervalSince(timestampDate)
         
-        // Only use timestamp calculation if we have recent data (within 5 seconds)
-        // This helps with web players that don't update timestamps frequently
-        if timeDiff >= 0 && timeDiff < 5.0 && playbackRate > 0 {
+        // Use real-time calculation for positive time differences with reasonable bounds
+        // This provides smooth progression for all media sources
+        if timeDiff >= 0 && timeDiff < 30.0 && playbackRate > 0 {
             let projectedTime = elapsedTime + (timeDiff * playbackRate)
-            return min(projectedTime, duration)
+            let clampedTime = min(projectedTime, duration)
+            
+            // Ensure we don't go backwards unless there's a significant jump
+            if clampedTime >= sliderValue || abs(clampedTime - sliderValue) > 2.0 {
+                return clampedTime
+            } else {
+                return sliderValue
+            }
         } else {
-            // Fallback to controller-provided elapsed time for stale or invalid timestamps
-            return min(elapsedTime, duration)
+            // For very stale timestamps or negative differences, use controller time
+            // but only if it makes sense relative to current slider position
+            let controllerTime = min(elapsedTime, duration)
+            
+            // Prevent backwards jumps unless there's a significant change (track change, seek)
+            if controllerTime >= sliderValue || abs(controllerTime - sliderValue) > 5.0 {
+                return controllerTime
+            } else {
+                return sliderValue
+            }
         }
     }
 
@@ -323,6 +348,19 @@ struct MusicSliderView: View {
         }
         .onChange(of: currentDate) {
             sliderValue = currentElapsedTime
+        }
+        .onChange(of: elapsedTime) {
+            // Update slider when media changes (e.g., track changes, seeking)
+            // But only if we're not dragging and the difference is significant
+            if !dragging && abs(elapsedTime - sliderValue) > 1.0 {
+                sliderValue = elapsedTime
+            }
+        }
+        .onChange(of: duration) {
+            // Handle track changes - reset slider if duration changes significantly
+            if !dragging && sliderValue > duration {
+                sliderValue = min(elapsedTime, duration)
+            }
         }
     }
 
