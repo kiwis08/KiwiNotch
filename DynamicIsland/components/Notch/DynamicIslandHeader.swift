@@ -46,11 +46,7 @@ struct DynamicIslandHeader: View {
                 if vm.notchState == .open {
                     if Defaults[.showMirror] {
                         Button(action: {
-                            if webcamManager.isSessionRunning {
-                                webcamManager.stopSession()
-                            } else {
-                                webcamManager.startSession()
-                            }
+                            vm.toggleCameraPreview()
                         }) {
                             Capsule()
                                 .fill(.black)

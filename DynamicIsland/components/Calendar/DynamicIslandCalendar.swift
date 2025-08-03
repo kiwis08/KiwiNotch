@@ -150,7 +150,7 @@ struct WheelPicker: View {
 
 struct CalendarView: View {
     @EnvironmentObject var vm: DynamicIslandViewModel
-    @StateObject private var calendarManager = CalendarManager()
+    @ObservedObject private var calendarManager = CalendarManager.shared
     @State private var selectedDate = Date()
     
     var body: some View {

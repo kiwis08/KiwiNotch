@@ -19,15 +19,11 @@ class MusicManager: ObservableObject {
     static let shared = MusicManager()
     private var cancellables = Set<AnyCancellable>()
     private var controllerCancellables = Set<AnyCancellable>()
-    private var debounceToggle: DispatchWorkItem?
+    private var debounceIdleTask: Task<Void, Never>?
     
-    // Helper to check if macOS is too new for NowPlayingController
-    public var isNowPlayingDeprecated: Bool {
-        if #available(macOS 15.4, *) {
-            return true
-        }
-        return false
-    }
+    // Helper to check if macOS has removed support for NowPlayingController
+    public private(set) var isNowPlayingDeprecated: Bool = false
+    private let mediaChecker = MediaChecker()
 
     // Active controller
     private var activeController: (any MediaControllerProtocol)?
@@ -48,6 +44,8 @@ class MusicManager: ObservableObject {
     @Published var elapsedTime: TimeInterval = 0
     @Published var timestampDate: Date = .init()
     @Published var playbackRate: Double = 1
+    @Published var isShuffled: Bool = false
+    @Published var repeatMode: RepeatMode = .off
     @ObservedObject var coordinator = DynamicIslandViewCoordinator.shared
     @Published var usingAppIconForArtwork: Bool = false
     
@@ -67,13 +65,24 @@ class MusicManager: ObservableObject {
                 self?.setActiveControllerBasedOnPreference()
             }
             .store(in: &cancellables)
+
+        // Initialize deprecation check asynchronously
+        Task { @MainActor in
+            do {
+                self.isNowPlayingDeprecated = try await self.mediaChecker.checkDeprecationStatus()
+                print("Deprecation check completed: \(self.isNowPlayingDeprecated)")
+            } catch {
+                print("Failed to check deprecation status: \(error). Defaulting to false.")
+                self.isNowPlayingDeprecated = false
+            }
             
-        // Initialize the active controller
-        setActiveControllerBasedOnPreference()
+            // Initialize the active controller after deprecation check
+            self.setActiveControllerBasedOnPreference()
+        }
     }
 
     deinit {
-        debounceToggle?.cancel()
+        debounceIdleTask?.cancel()
         cancellables.removeAll()
         controllerCancellables.removeAll()
         flipWorkItem?.cancel()
@@ -98,7 +107,17 @@ class MusicManager: ObservableObject {
             // Only create NowPlayingController if not deprecated on this macOS version
             if !self.isNowPlayingDeprecated {
                 ignoreLastUpdated = false
-                newController = NowPlayingController()
+                if let controller = NowPlayingController() {
+                    // Check if the controller can actually work
+                    if controller.isWorking {
+                        newController = controller
+                    } else {
+                        print("⚠️ NowPlayingController created but resources unavailable, falling back to default")
+                        return nil
+                    }
+                } else {
+                    return nil
+                }
             } else {
                 return nil
             }
@@ -285,19 +304,20 @@ class MusicManager: ObservableObject {
     private func updateIdleState(state: Bool) {
         if state {
             isPlayerIdle = false
-            debounceToggle?.cancel()
+            debounceIdleTask?.cancel()
         } else {
-            debounceToggle = DispatchWorkItem { [weak self] in
-                guard let self = self else { return }
-                if self.lastUpdated.timeIntervalSinceNow < -Defaults[.waitInterval] {
-                    withAnimation {
-                        self.isPlayerIdle = !self.isPlaying
+            debounceIdleTask?.cancel()
+            debounceIdleTask = Task { [weak self] in
+                try? await Task.sleep(for: .seconds(Defaults[.waitInterval]))
+                guard let self = self, !Task.isCancelled else { return }
+                await MainActor.run {
+                    if self.lastUpdated.timeIntervalSinceNow < -Defaults[.waitInterval] {
+                        withAnimation {
+                            self.isPlayerIdle = !self.isPlaying
+                        }
                     }
                 }
             }
-
-            DispatchQueue.main.asyncAfter(
-                deadline: .now() + Defaults[.waitInterval], execute: debounceToggle!)
         }
     }
 
@@ -338,31 +358,57 @@ class MusicManager: ObservableObject {
 
     // MARK: - Public Methods for controlling playback
     func playPause() {
-        activeController?.togglePlay()
+        Task {
+            await activeController?.togglePlay()
+        }
     }
     
     func play() {
-        activeController?.play()
+        Task {
+            await activeController?.play()
+        }
     }
     
     func pause() {
-        activeController?.pause()
+        Task {
+            await activeController?.pause()
+        }
+    }
+    
+    func toggleShuffle() {
+        Task {
+            await activeController?.toggleShuffle()
+        }
+    }
+
+    func toggleRepeat() {
+        Task {
+            await activeController?.toggleRepeat()
+        }
     }
     
     func togglePlay() {
-        activeController?.togglePlay()
+        Task {
+            await activeController?.togglePlay()
+        }
     }
     
     func nextTrack() {
-        activeController?.nextTrack()
+        Task {
+            await activeController?.nextTrack()
+        }
     }
     
     func previousTrack() {
-        activeController?.previousTrack()
+        Task {
+            await activeController?.previousTrack()
+        }
     }
     
     func seek(to position: TimeInterval) {
-        activeController?.seek(to: position)
+        Task {
+            await activeController?.seek(to: position)
+        }
     }
     
     func openMusicApp() {
@@ -388,9 +434,14 @@ class MusicManager: ObservableObject {
     
     func forceUpdate() {
         // Request immediate update from the active controller
-        DispatchQueue.main.async { [weak self] in
+        Task { [weak self] in
             if self?.activeController?.isActive() == true {
-                self?.activeController?.updatePlaybackInfo()
+                if  type(of: self?.activeController) == YouTubeMusicController.self,
+                   let youtubeController = self?.activeController as? YouTubeMusicController {
+                    await youtubeController.pollPlaybackState()
+                } else {
+                    await self?.activeController?.updatePlaybackInfo()
+                }
             }
         }
     }

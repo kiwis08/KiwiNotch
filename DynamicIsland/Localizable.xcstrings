@@ -35,6 +35,9 @@
     "%lld" : {
 
     },
+    "%lld items" : {
+
+    },
     "%lld%%" : {
 
     },
@@ -48,18 +51,6 @@
 
     },
     "• New feature 1" : {
-
-    },
-    "3 items" : {
-
-    },
-    "5 items" : {
-
-    },
-    "7 items" : {
-
-    },
-    "10 items" : {
 
     },
     "About" : {
@@ -84,9 +75,6 @@
       }
     },
     "Access Denied" : {
-
-    },
-    "Actions" : {
 
     },
     "Activate" : {
@@ -254,13 +242,10 @@
     "Check for Updates…" : {
 
     },
-    "Choose a custom sound file that will play when the timer completes. Supported formats: MP3, M4A, WAV, AIFF." : {
-
-    },
     "Choose a Music Source" : {
 
     },
-    "Choose File" : {
+    "Choose which performance graphs to display. 1-3 graphs use horizontal layout, 4+ graphs use compressed grid layout." : {
 
     },
     "Circle" : {
@@ -269,16 +254,13 @@
     "Clear" : {
 
     },
-    "Clear Clipboard History" : {
-
-    },
-    "Clear Data" : {
-
-    },
     "Clipboard" : {
 
     },
     "Clipboard History" : {
+
+    },
+    "Clipboard history will be tracked and accessible via the header button." : {
 
     },
     "Clipboard Manager" : {
@@ -297,25 +279,13 @@
         }
       }
     },
+    "Configure how many recent clipboard items to remember (minimum 3)." : {
+
+    },
     "Continue" : {
 
     },
-    "Controls" : {
-
-    },
     "Copy something to get started" : {
-
-    },
-    "CPU Usage" : {
-
-    },
-    "Current custom timer: %@" : {
-
-    },
-    "Current History" : {
-
-    },
-    "Current Items" : {
 
     },
     "Custom" : {
@@ -341,25 +311,13 @@
     "Custom notch size - %.0f" : {
 
     },
-    "Custom Timer" : {
-
-    },
-    "Custom Timer Duration" : {
-
-    },
     "Custom vizualizers (Lottie)" : {
-
-    },
-    "Custom: %@" : {
 
     },
     "Customize in Settings" : {
 
     },
     "Default" : {
-
-    },
-    "Default: dynamic.m4a" : {
 
     },
     "Description" : {
@@ -369,12 +327,6 @@
 
     },
     "Disabled" : {
-
-    },
-    "Disk Read" : {
-
-    },
-    "Disk Write" : {
 
     },
     "Download" : {
@@ -422,9 +374,6 @@
     "dynamic.island" : {
 
     },
-    "Each graph can be individually enabled or disabled. Network activity shows download/upload speeds, and disk I/O shows read/write speeds." : {
-
-    },
     "Easily copy, store, and manage your most-used content. Upgrade now for advanced features like multi-item storage and quick access!" : {
 
     },
@@ -465,9 +414,6 @@
     "Enable music live activity" : {
 
     },
-    "Enable or disable the timer functionality in the Dynamic Island. The live activity toggle controls whether timer progress is shown in the expanded view." : {
-
-    },
     "Enable sneak peek" : {
 
     },
@@ -477,7 +423,13 @@
     "Enable timer feature in Settings to use this tab" : {
 
     },
-    "Enable timer live activity" : {
+    "Enable to access timer functionality in the Dynamic Island." : {
+
+    },
+    "Enable to monitor CPU, Memory, GPU, Network and Disk usage." : {
+
+    },
+    "Enable to track clipboard history and access recent items." : {
 
     },
     "Enhance your experience with HUDs" : {
@@ -540,16 +492,13 @@
     "Got it!" : {
 
     },
-    "GPU Usage" : {
-
-    },
     "Gradient" : {
 
     },
     "Graph Visibility" : {
 
     },
-    "Hide DynamicIsland Options" : {
+    "Hide BoringNotch Options" : {
 
     },
     "Hide only when NowPlaying app is in fullscreen" : {
@@ -561,7 +510,7 @@
     "High" : {
 
     },
-    "History Size" : {
+    "History size" : {
 
     },
     "https://github.com/th-ch/youtube-music" : {
@@ -593,9 +542,6 @@
     "Installed extensions" : {
 
     },
-    "Last Updated" : {
-
-    },
     "Later" : {
 
     },
@@ -603,9 +549,6 @@
 
     },
     "Live" : {
-
-    },
-    "Live Performance Data" : {
 
     },
     "Lottie JSON URL" : {
@@ -649,6 +592,9 @@
     "Media change with horizontal gestures" : {
 
     },
+    "Media controls" : {
+
+    },
     "Media inactivity timeout" : {
       "localizations" : {
         "en" : {
@@ -675,9 +621,6 @@
     "Medium" : {
 
     },
-    "Memory Usage" : {
-
-    },
     "Menubar icon" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -698,19 +641,10 @@
     "Minimum hover duration" : {
 
     },
-    "Minutes" : {
-
-    },
     "Mirror" : {
 
     },
     "Mirror shape" : {
-
-    },
-    "Monitor clipboard changes and keep a history of recent copies. Use Cmd+Shift+V to quickly access clipboard history." : {
-
-    },
-    "Monitoring Status" : {
 
     },
     "More" : {
@@ -726,12 +660,6 @@
 
     },
     "Need Restart" : {
-
-    },
-    "Network Download" : {
-
-    },
-    "Network Upload" : {
 
     },
     "Never hide" : {
@@ -885,9 +813,6 @@
     "Remember last tab" : {
 
     },
-    "Reset to Default" : {
-
-    },
     "Restart" : {
 
     },
@@ -911,9 +836,6 @@
         }
       }
     },
-    "Seconds" : {
-
-    },
     "Select Calendars" : {
 
     },
@@ -924,9 +846,6 @@
 
     },
     "Selected animation" : {
-
-    },
-    "Set a custom duration for the timer. This will be used when you press the 'Custom' button in the timer interface." : {
 
     },
     "Settings" : {
@@ -955,9 +874,6 @@
           }
         }
       }
-    },
-    "Show calendar" : {
-
     },
     "Show charging indicator" : {
       "extractionState" : "stale",
@@ -998,6 +914,9 @@
     "Show on all displays" : {
 
     },
+    "Show shuffle and repeat buttons" : {
+
+    },
     "Slider color" : {
 
     },
@@ -1026,25 +945,16 @@
     "Start" : {
 
     },
-    "Start Demo Timer:" : {
-
-    },
-    "Start Monitoring" : {
-
-    },
-    "Starts a 5-minute demo timer to test the timer live activity feature." : {
-
-    },
     "Stats" : {
 
     },
     "Stats Disabled" : {
 
     },
-    "Stop" : {
+    "Stats tab will appear in the notch when enabled." : {
 
     },
-    "Stop Monitoring" : {
+    "Stop" : {
 
     },
     "Stopped" : {
@@ -1063,13 +973,10 @@
     "System features" : {
 
     },
-    "The clipboard icon appears in the header next to the settings gear when enabled. Use the global shortcut Cmd+Shift+V or click the icon to access history." : {
+    "System Monitoring" : {
 
     },
     "TheDynamicIsland" : {
-
-    },
-    "This will permanently delete all stored clipboard history. The clipboard button is located to the left of the settings gear in the header." : {
 
     },
     "Time to Full Charge: %lld min" : {
@@ -1081,10 +988,7 @@
     "Timer Disabled" : {
 
     },
-    "Timer Feature" : {
-
-    },
-    "Timer Sound" : {
+    "Timer tab will appear in the notch when enabled." : {
 
     },
     "Toggle Notch Open:" : {
@@ -1106,9 +1010,6 @@
 
     },
     "unmuted" : {
-
-    },
-    "Update" : {
 
     },
     "Upgrade to Pro" : {
@@ -1144,12 +1045,6 @@
 
     },
     "What's New" : {
-
-    },
-    "When enabled, the Stats tab will display real-time system performance graphs. This feature requires system permissions and may use additional battery." : {
-
-    },
-    "With %lld graphs enabled, the Dynamic Island will expand horizontally to accommodate all graphs in a single row." : {
 
     },
     "You can now enjoy the app. If you want to tweak things further, you can always visit the settings." : {

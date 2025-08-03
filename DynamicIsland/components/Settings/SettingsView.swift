@@ -3,7 +3,7 @@
 //  DynamicIsland
 //
 //  Created by Richard Kunkli on 07/08/2024.
-// Modified by Hariharan Mudaliar
+//
 
 import AVFoundation
 import Defaults
@@ -14,20 +14,17 @@ import LottieUI
 import Sparkle
 import SwiftUI
 import SwiftUIIntrospect
-import UniformTypeIdentifiers
 
 struct SettingsView: View {
     @StateObject var extensionManager = DynamicIslandExtensionManager()
-    @StateObject private var calendarManager = CalendarManager()
-    
     @State private var selectedTab = "General"
-    
+
     let updaterController: SPUStandardUpdaterController?
-    
+
     init(updaterController: SPUStandardUpdaterController? = nil) {
         self.updaterController = updaterController
     }
-    
+
     var body: some View {
         NavigationSplitView {
             List(selection: $selectedTab) {
@@ -39,9 +36,6 @@ struct SettingsView: View {
                 }
                 NavigationLink(value: "Media") {
                     Label("Media", systemImage: "play.laptopcomputer")
-                }
-                NavigationLink(value: "Timer") {
-                    Label("Timer", systemImage: "timer")
                 }
                 NavigationLink(value: "Calendar") {
                     Label("Calendar", systemImage: "calendar")
@@ -55,6 +49,15 @@ struct SettingsView: View {
                 NavigationLink(value: "Battery") {
                     Label("Battery", systemImage: "battery.100.bolt")
                 }
+                NavigationLink(value: "Timer") {
+                    Label("Timer", systemImage: "timer")
+                }
+                NavigationLink(value: "Stats") {
+                    Label("Stats", systemImage: "chart.xyaxis.line")
+                }
+                NavigationLink(value: "Clipboard") {
+                    Label("Clipboard", systemImage: "clipboard")
+                }
                 if extensionManager.installedExtensions
                     .contains(where: { $0.bundleIdentifier == downloadManagerExtension }) {
                     NavigationLink(value: "Downloads") {
@@ -63,12 +66,6 @@ struct SettingsView: View {
                 }
                 NavigationLink(value: "Shelf") {
                     Label("Shelf", systemImage: "books.vertical")
-                }
-                NavigationLink(value: "Stats") {
-                    Label("Stats", systemImage: "chart.line.uptrend.xyaxis")
-                }
-                NavigationLink(value: "Clipboard") {
-                    Label("Clipboard", systemImage: "doc.on.clipboard")
                 }
                 NavigationLink(value: "Shortcuts") {
                     Label("Shortcuts", systemImage: "keyboard")
@@ -92,22 +89,22 @@ struct SettingsView: View {
                     Appearance()
                 case "Media":
                     Media()
-                case "Timer":
-                    TimerSettings()
                 case "Calendar":
                     CalendarSettings()
                 case "HUD":
                     HUD()
                 case "Battery":
                     Charge()
+                case "Timer":
+                    TimerSettings()
+                case "Stats":
+                    StatsSettings()
+                case "Clipboard":
+                    ClipboardSettings()
                 case "Downloads":
                     Downloads()
                 case "Shelf":
                     Shelf()
-                case "Stats":
-                    Stats()
-                case "Clipboard":
-                    ClipboardSettings()
                 case "Shortcuts":
                     Shortcuts()
                 case "Extensions":
@@ -134,7 +131,6 @@ struct SettingsView: View {
                 .disabled(true)
         }
         .environmentObject(extensionManager)
-        .environmentObject(calendarManager)
         .formStyle(.grouped)
         .frame(width: 700)
         .background(Color(NSColor.windowBackgroundColor))
@@ -158,8 +154,7 @@ struct GeneralSettings: View {
     @Default(.automaticallySwitchDisplay) var automaticallySwitchDisplay
     @Default(.enableGestures) var enableGestures
     @Default(.openNotchOnHover) var openNotchOnHover
-    @Default(.alwaysHideInFullscreen) var alwaysHideInFullscreen
-    
+
     var body: some View {
         Form {
             Section {
@@ -188,7 +183,7 @@ struct GeneralSettings: View {
             } header: {
                 Text("System features")
             }
-            
+
             Section {
                 Picker(selection: $notchHeightMode, label:
                     Text("Notch display height")) {
@@ -248,9 +243,9 @@ struct GeneralSettings: View {
             } header: {
                 Text("Notch Height")
             }
-            
+
             NotchBehaviour()
-            
+
             gestureControls()
         }
         .toolbar {
@@ -266,7 +261,7 @@ struct GeneralSettings: View {
             }
         }
     }
-    
+
     @ViewBuilder
     func gestureControls() -> some View {
         Section {
@@ -297,7 +292,7 @@ struct GeneralSettings: View {
                 .font(.caption)
         }
     }
-    
+
     @ViewBuilder
     func NotchBehaviour() -> some View {
         Section {
@@ -369,7 +364,7 @@ struct Downloads: View {
                     Text("Both")
                         .tag(DownloadIconStyle.iconAndAppIcon)
                 }
-                
+
             } header: {
                 HStack {
                     Text("Download indicators")
@@ -397,7 +392,7 @@ struct Downloads: View {
                                 .contentShape(Rectangle())
                                 .foregroundStyle(.secondary)
                         }
-                        
+
                         Divider()
                         Button {} label: {
                             Image(systemName: "minus")
@@ -470,7 +465,7 @@ struct Media: View {
     @Default(.hideNotchOption) var hideNotchOption
     @Default(.enableSneakPeek) private var enableSneakPeek
     @Default(.sneakPeekStyles) var sneakPeekStyles
-    
+
     var body: some View {
         Form {
             Section {
@@ -504,12 +499,20 @@ struct Media: View {
                 }
             }
             Section {
+                Defaults.Toggle(key: .showShuffleAndRepeat) {
+                    HStack {
+                        Text("Show shuffle and repeat buttons")
+                        customBadge(text: "Beta")
+                    }
+                }
+            } header: {
+                Text("Media controls")
+            }
+            Section {
                 Toggle(
                     "Enable music live activity",
-                    isOn: $coordinator.musicLiveActivityEnabled
+                    isOn: $coordinator.musicLiveActivityEnabled.animation()
                 )
-                .animation(.easeInOut, value: coordinator.musicLiveActivityEnabled)
-                
                 Toggle("Enable sneak peek", isOn: $enableSneakPeek)
                 Picker("Sneak Peek Style", selection: $sneakPeekStyles){
                     ForEach(SneakPeekStyle.allCases) { style in
@@ -532,21 +535,20 @@ struct Media: View {
 
             Picker(selection: $hideNotchOption, label:
                 HStack {
-                    Text("Hide DynamicIsland Options")
+                    Text("Hide BoringNotch Options")
                     customBadge(text: "Beta")
                 }) {
                     Text("Always hide in fullscreen").tag(HideNotchOption.always)
                     Text("Hide only when NowPlaying app is in fullscreen").tag(HideNotchOption.nowPlayingOnly)
                     Text("Never hide").tag(HideNotchOption.never)
                 }
-                .onChange(of: hideNotchOption) { _, newValue in
-                    Defaults[.alwaysHideInFullscreen] = newValue == .always
-                    Defaults[.enableFullscreenMediaDetection] = newValue != .never
+                .onChange(of: hideNotchOption) {
+                    Defaults[.enableFullscreenMediaDetection] = hideNotchOption != .never
                 }
         }
         .navigationTitle("Media")
     }
-    
+
     // Only show controller options that are available on this macOS version
     private var availableMediaControllers: [MediaControllerType] {
         if MusicManager.shared.isNowPlayingDeprecated {
@@ -558,7 +560,7 @@ struct Media: View {
 }
 
 struct CalendarSettings: View {
-    @ObservedObject private var calendarManager = CalendarManager()
+    @ObservedObject private var calendarManager = CalendarManager.shared
     @Default(.showCalendar) var showCalendar: Bool
 
     var body: some View {
@@ -574,7 +576,7 @@ struct CalendarSettings: View {
                     }
                 }
             } else {
-                Toggle("Show calendar", isOn: $showCalendar)
+                Defaults.Toggle("Show calendar", key: .showCalendar)
                 Section(header: Text("Select Calendars")) {
                     List {
                         ForEach(calendarManager.allCalendars, id: \.id) { calendar in
@@ -588,6 +590,7 @@ struct CalendarSettings: View {
                             )) {
                                 Text(calendar.title)
                             }
+                            .disabled(!showCalendar)
                         }
                     }
                 }
@@ -600,157 +603,6 @@ struct CalendarSettings: View {
         }
         // Add navigation title if it's missing or adjust as needed
         .navigationTitle("Calendar")
-    }
-}
-
-struct TimerSettings: View {
-    @ObservedObject private var coordinator = DynamicIslandViewCoordinator.shared
-    @Default(.enableTimerFeature) var enableTimerFeature
-    @AppStorage("customTimerDuration") private var customTimerDuration: Double = 600 // 10 minutes default
-    @State private var customMinutes: Int = 10
-    @State private var customSeconds: Int = 0
-    
-    var body: some View {
-        Form {
-            Section {
-                Defaults.Toggle("Enable timer feature", key: .enableTimerFeature)
-                
-                if enableTimerFeature {
-                    Toggle(
-                        "Enable timer live activity",
-                        isOn: $coordinator.timerLiveActivityEnabled
-                    )
-                    .animation(.easeInOut, value: coordinator.timerLiveActivityEnabled)
-                }
-            } header: {
-                Text("Timer Feature")
-            } footer: {
-                Text("Enable or disable the timer functionality in the Dynamic Island. The live activity toggle controls whether timer progress is shown in the expanded view.")
-            }
-            
-            if enableTimerFeature {
-                Section {
-                    VStack(alignment: .leading, spacing: 16) {
-                        Text("Custom Timer Duration")
-                            .font(.headline)
-                        
-                        HStack(spacing: 16) {
-                            VStack {
-                                Text("Minutes")
-                                    .font(.system(size: 14, weight: .medium))
-                                    .foregroundStyle(.secondary)
-                                
-                                Picker(selection: $customMinutes, label: Text("Minutes")) {
-                                    ForEach(0...59, id: \.self) { minute in
-                                        Text("\(minute)").tag(minute)
-                                    }
-                                }
-                                .pickerStyle(.menu)
-                                .frame(width: 80, height: 40)
-                            }
-                            
-                            VStack {
-                                Text("Seconds")
-                                    .font(.system(size: 14, weight: .medium))
-                                    .foregroundStyle(.secondary)
-                                
-                                Picker(selection: $customSeconds, label: Text("Seconds")) {
-                                    ForEach(0...59, id: \.self) { second in
-                                        Text("\(second)").tag(second)
-                                    }
-                                }
-                                .pickerStyle(.menu)
-                                .frame(width: 80, height: 40)
-                            }
-                        }
-                        
-                        HStack {
-                            Text("Current custom timer: \(customTimerDisplayText)")
-                                .foregroundStyle(.secondary)
-                            Spacer()
-                            Button("Update") {
-                                customTimerDuration = Double(customMinutes * 60 + customSeconds)
-                            }
-                            .disabled(customMinutes == 0 && customSeconds == 0)
-                        }
-                    }
-                } header: {
-                    Text("Custom Timer")
-                } footer: {
-                    Text("Set a custom duration for the timer. This will be used when you press the 'Custom' button in the timer interface.")
-                }
-                
-                Section {
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack {
-                            Text("Timer Sound")
-                                .font(.system(size: 16, weight: .medium))
-                            Spacer()
-                            Button("Choose File") {
-                                selectCustomTimerSound()
-                            }
-                            .buttonStyle(.bordered)
-                        }
-                        
-                        if let customTimerSoundPath = UserDefaults.standard.string(forKey: "customTimerSoundPath") {
-                            Text("Custom: \(URL(fileURLWithPath: customTimerSoundPath).lastPathComponent)")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        } else {
-                            Text("Default: dynamic.m4a")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                        
-                        Button("Reset to Default") {
-                            UserDefaults.standard.removeObject(forKey: "customTimerSoundPath")
-                        }
-                        .buttonStyle(.bordered)
-                        .disabled(UserDefaults.standard.string(forKey: "customTimerSoundPath") == nil)
-                    }
-                } header: {
-                    Text("Timer Sound")
-                } footer: {
-                    Text("Choose a custom sound file that will play when the timer completes. Supported formats: MP3, M4A, WAV, AIFF.")
-                }
-            }
-        }
-        .navigationTitle("Timer")
-        .onAppear {
-            let totalMinutes = Int(customTimerDuration) / 60
-            customMinutes = totalMinutes
-            customSeconds = Int(customTimerDuration) % 60
-        }
-    }
-    
-    private var customTimerDisplayText: String {
-        let totalMinutes = Int(customTimerDuration) / 60
-        let seconds = Int(customTimerDuration) % 60
-        let hours = totalMinutes / 60
-        let minutes = totalMinutes % 60
-        
-        if hours > 0 {
-            return "\(hours):\(String(format: "%02d", minutes)):\(String(format: "%02d", seconds))"
-        } else if minutes > 0 {
-            return "\(minutes):\(String(format: "%02d", seconds))"
-        } else {
-            return "\(seconds)s"
-        }
-    }
-    
-    private func selectCustomTimerSound() {
-        let panel = NSOpenPanel()
-        panel.title = "Select Timer Sound"
-        panel.allowedContentTypes = [.audio]
-        panel.allowsMultipleSelection = false
-        panel.canChooseDirectories = false
-        panel.canChooseFiles = true
-        
-        if panel.runModal() == .OK {
-            if let url = panel.url {
-                UserDefaults.standard.set(url.path, forKey: "customTimerSoundPath")
-            }
-        }
     }
 }
 
@@ -786,9 +638,9 @@ struct About: View {
                 } header: {
                     Text("Version info")
                 }
-                
+
                 UpdaterSettingsView(updater: updaterController.updater)
-                
+
                 HStack(spacing: 30) {
                     Spacer(minLength: 0)
                     Button {
@@ -891,15 +743,15 @@ struct Extensions: View {
                                     .font(.footnote)
                             }
                             .frame(width: 60, alignment: .leading)
-                            
+
                             Menu(content: {
                                 Button("Restart") {
                                     let ws = NSWorkspace.shared
-                                    
+
                                     if let ext = ws.runningApplications.first(where: { $0.bundleIdentifier == item.bundleIdentifier }) {
                                         ext.terminate()
                                     }
-                                    
+
                                     if let appURL = ws.urlForApplication(withBundleIdentifier: item.bundleIdentifier) {
                                         ws.openApplication(at: appURL, configuration: .init(), completionHandler: nil)
                                     }
@@ -987,7 +839,7 @@ struct Appearance: View {
     let icons: [String] = ["logo2"]
     @State private var selectedIcon: String = "logo2"
     @State private var selectedListVisualizer: CustomVisualizer? = nil
-    
+
     @State private var isPresented: Bool = false
     @State private var name: String = ""
     @State private var url: String = ""
@@ -1003,7 +855,7 @@ struct Appearance: View {
             } header: {
                 Text("General")
             }
-            
+
             Section {
                 Defaults.Toggle("Enable colored spectrograms", key: .coloredSpectrogram)
                 Defaults
@@ -1017,7 +869,7 @@ struct Appearance: View {
             } header: {
                 Text("Media")
             }
-            
+
             Section {
                 Toggle(
                     "Use music visualizer spectrogram",
@@ -1053,7 +905,7 @@ struct Appearance: View {
                     customBadge(text: "Coming soon")
                 }
             }
-            
+
             Section {
                 List {
                     ForEach(customVisualizers, id: \.self) { visualizer in
@@ -1151,7 +1003,7 @@ struct Appearance: View {
                                 Text("Cancel")
                                     .frame(maxWidth: .infinity, alignment: .center)
                             }
-                            
+
                             Button {
                                 let visualizer: CustomVisualizer = .init(
                                     UUID: UUID(),
@@ -1159,11 +1011,11 @@ struct Appearance: View {
                                     url: URL(string: url)!,
                                     speed: speed
                                 )
-                                
+
                                 if !customVisualizers.contains(visualizer) {
                                     customVisualizers.append(visualizer)
                                 }
-                                
+
                                 isPresented.toggle()
                             } label: {
                                 Text("Add")
@@ -1185,7 +1037,7 @@ struct Appearance: View {
                     }
                 }
             }
-            
+
             Section {
                 Defaults.Toggle("Enable boring mirror", key: .showMirror)
                     .disabled(!checkVideoInput())
@@ -1201,7 +1053,7 @@ struct Appearance: View {
                     Text("Additional features")
                 }
             }
-            
+
             Section {
                 HStack {
                     ForEach(icons, id: \.self) { icon in
@@ -1217,7 +1069,7 @@ struct Appearance: View {
                                             lineWidth: 2.5
                                         )
                                 )
-                            
+
                             Text("Default")
                                 .fontWeight(.medium)
                                 .font(.caption)
@@ -1248,12 +1100,12 @@ struct Appearance: View {
         }
         .navigationTitle("Appearance")
     }
-    
+
     func checkVideoInput() -> Bool {
         if let _ = AVCaptureDevice.default(for: .video) {
             return true
         }
-        
+
         return false
     }
 }
@@ -1274,187 +1126,8 @@ struct Shortcuts: View {
             Section {
                 KeyboardShortcuts.Recorder("Toggle Notch Open:", name: .toggleNotchOpen)
             }
-            Section {
-                KeyboardShortcuts.Recorder("Start Demo Timer:", name: .startDemoTimer)
-            } header: {
-                Text("Timer")
-            } footer: {
-                Text("Starts a 5-minute demo timer to test the timer live activity feature.")
-                    .multilineTextAlignment(.trailing)
-                    .foregroundStyle(.secondary)
-                    .font(.caption)
-            }
         }
         .navigationTitle("Shortcuts")
-    }
-}
-
-struct Stats: View {
-    @ObservedObject var statsManager = StatsManager.shared
-    @Default(.enableStatsFeature) var enableStatsFeature
-    @Default(.showCpuGraph) var showCpuGraph
-    @Default(.showMemoryGraph) var showMemoryGraph
-    @Default(.showGpuGraph) var showGpuGraph
-    @Default(.showNetworkGraph) var showNetworkGraph
-    @Default(.showDiskGraph) var showDiskGraph
-    
-    var enabledGraphsCount: Int {
-        [showCpuGraph, showMemoryGraph, showGpuGraph, showNetworkGraph, showDiskGraph].filter { $0 }.count
-    }
-    
-    var body: some View {
-        Form {
-            Section {
-                Defaults.Toggle("Enable system stats monitoring", key: .enableStatsFeature)
-                    .onChange(of: enableStatsFeature) { _, newValue in
-                        if newValue {
-                            statsManager.startMonitoring()
-                        } else {
-                            statsManager.stopMonitoring()
-                        }
-                    }
-            } header: {
-                Text("General")
-            } footer: {
-                Text("When enabled, the Stats tab will display real-time system performance graphs. This feature requires system permissions and may use additional battery.")
-                    .multilineTextAlignment(.trailing)
-                    .foregroundStyle(.secondary)
-                    .font(.caption)
-            }
-            
-            if enableStatsFeature {
-                Section {
-                    Defaults.Toggle("CPU Usage", key: .showCpuGraph)
-                    Defaults.Toggle("Memory Usage", key: .showMemoryGraph) 
-                    Defaults.Toggle("GPU Usage", key: .showGpuGraph)
-                    Defaults.Toggle("Network Activity", key: .showNetworkGraph)
-                    Defaults.Toggle("Disk I/O", key: .showDiskGraph)
-                } header: {
-                    Text("Graph Visibility")
-                } footer: {
-                    if enabledGraphsCount >= 4 {
-                        Text("With \(enabledGraphsCount) graphs enabled, the Dynamic Island will expand horizontally to accommodate all graphs in a single row.")
-                            .multilineTextAlignment(.trailing)
-                            .foregroundStyle(.secondary)
-                            .font(.caption)
-                    } else {
-                        Text("Each graph can be individually enabled or disabled. Network activity shows download/upload speeds, and disk I/O shows read/write speeds.")
-                            .multilineTextAlignment(.trailing)
-                            .foregroundStyle(.secondary)
-                            .font(.caption)
-                    }
-                }
-                
-                Section {
-                    HStack {
-                        Text("Monitoring Status")
-                        Spacer()
-                        HStack(spacing: 4) {
-                            Circle()
-                                .fill(statsManager.isMonitoring ? .green : .red)
-                                .frame(width: 8, height: 8)
-                            Text(statsManager.isMonitoring ? "Active" : "Stopped")
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                    
-                    if statsManager.isMonitoring {
-                        if showCpuGraph {
-                            HStack {
-                                Text("CPU Usage")
-                                Spacer()
-                                Text(statsManager.cpuUsageString)
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
-                        
-                        if showMemoryGraph {
-                            HStack {
-                                Text("Memory Usage")
-                                Spacer()
-                                Text(statsManager.memoryUsageString)
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
-                        
-                        if showGpuGraph {
-                            HStack {
-                                Text("GPU Usage")
-                                Spacer()
-                                Text(statsManager.gpuUsageString)
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
-                        
-                        if showNetworkGraph {
-                            HStack {
-                                Text("Network Download")
-                                Spacer()
-                                Text(String(format: "%.1f MB/s", statsManager.networkDownload))
-                                    .foregroundStyle(.secondary)
-                            }
-                            
-                            HStack {
-                                Text("Network Upload")
-                                Spacer()
-                                Text(String(format: "%.1f MB/s", statsManager.networkUpload))
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
-                        
-                        if showDiskGraph {
-                            HStack {
-                                Text("Disk Read")
-                                Spacer()
-                                Text(String(format: "%.1f MB/s", statsManager.diskRead))
-                                    .foregroundStyle(.secondary)
-                            }
-                            
-                            HStack {
-                                Text("Disk Write")
-                                Spacer()
-                                Text(String(format: "%.1f MB/s", statsManager.diskWrite))
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
-                        
-                        HStack {
-                            Text("Last Updated")
-                            Spacer()
-                            Text(statsManager.lastUpdated, style: .relative)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                } header: {
-                    Text("Live Performance Data")
-                }
-                
-                Section {
-                    HStack {
-                        Button(statsManager.isMonitoring ? "Stop Monitoring" : "Start Monitoring") {
-                            if statsManager.isMonitoring {
-                                statsManager.stopMonitoring()
-                            } else {
-                                statsManager.startMonitoring()
-                            }
-                        }
-                        .buttonStyle(.borderedProminent)
-                        .foregroundColor(statsManager.isMonitoring ? .red : .blue)
-                        
-                        Spacer()
-                        
-                        Button("Clear Data") {
-                            statsManager.clearHistory()
-                        }
-                        .buttonStyle(.bordered)
-                        .disabled(statsManager.isMonitoring)
-                    }
-                } header: {
-                    Text("Controls")
-                }
-            }
-        }
-        .navigationTitle("Stats")
     }
 }
 
@@ -1504,129 +1177,120 @@ func warningBadge(_ text: String, _ description: String) -> some View {
     }
 }
 
-struct ClipboardSettings: View {
-    @ObservedObject var clipboardManager = ClipboardManager.shared
-    @Default(.enableClipboardManager) var enableClipboardManager
-    @Default(.clipboardHistorySize) var clipboardHistorySize
-    @Default(.showClipboardIcon) var showClipboardIcon
-    
+struct TimerSettings: View {
     var body: some View {
         Form {
             Section {
-                Defaults.Toggle("Enable Clipboard Manager", key: .enableClipboardManager)
-                    .onChange(of: enableClipboardManager) { enabled in
-                        if enabled {
-                            clipboardManager.startMonitoring()
+                Defaults.Toggle("Enable timer feature", key: .enableTimerFeature)
+                    .onChange(of: Defaults[.enableTimerFeature]) { _, newValue in
+                        if !newValue {
+                            // Stop any running timers when feature is disabled
+                            TimerManager.shared.stopTimer()
+                        }
+                    }
+            } header: {
+                Text("Timer")
+            } footer: {
+                if Defaults[.enableTimerFeature] {
+                    Text("Timer tab will appear in the notch when enabled.")
+                } else {
+                    Text("Enable to access timer functionality in the Dynamic Island.")
+                }
+            }
+        }
+        .navigationTitle("Timer")
+    }
+}
+
+struct StatsSettings: View {
+    var body: some View {
+        Form {
+            Section {
+                Defaults.Toggle("Enable stats feature", key: .enableStatsFeature)
+                    .onChange(of: Defaults[.enableStatsFeature]) { _, newValue in
+                        if !newValue {
+                            // Stop monitoring when feature is disabled
+                            StatsManager.shared.stopMonitoring()
+                        }
+                    }
+            } header: {
+                Text("System Monitoring")
+            } footer: {
+                if Defaults[.enableStatsFeature] {
+                    Text("Stats tab will appear in the notch when enabled.")
+                } else {
+                    Text("Enable to monitor CPU, Memory, GPU, Network and Disk usage.")
+                }
+            }
+            
+            if Defaults[.enableStatsFeature] {
+                Section {
+                    Defaults.Toggle("Show CPU graph", key: .showCpuGraph)
+                    Defaults.Toggle("Show Memory graph", key: .showMemoryGraph)
+                    Defaults.Toggle("Show GPU graph", key: .showGpuGraph)
+                    Defaults.Toggle("Show Network graph", key: .showNetworkGraph)
+                    Defaults.Toggle("Show Disk graph", key: .showDiskGraph)
+                } header: {
+                    Text("Graph Visibility")
+                } footer: {
+                    Text("Choose which performance graphs to display. 1-3 graphs use horizontal layout, 4+ graphs use compressed grid layout.")
+                }
+            }
+        }
+        .navigationTitle("Stats")
+    }
+}
+
+struct ClipboardSettings: View {
+    var body: some View {
+        Form {
+            Section {
+                Defaults.Toggle("Enable clipboard manager", key: .enableClipboardManager)
+                    .onChange(of: Defaults[.enableClipboardManager]) { _, newValue in
+                        if newValue {
+                            ClipboardManager.shared.startMonitoring()
                         } else {
-                            clipboardManager.stopMonitoring()
+                            ClipboardManager.shared.stopMonitoring()
                         }
                     }
             } header: {
                 Text("Clipboard Manager")
             } footer: {
-                Text("Monitor clipboard changes and keep a history of recent copies. Use Cmd+Shift+V to quickly access clipboard history.")
+                if Defaults[.enableClipboardManager] {
+                    Text("Clipboard history will be tracked and accessible via the header button.")
+                } else {
+                    Text("Enable to track clipboard history and access recent items.")
+                }
             }
             
-            if enableClipboardManager {
+            if Defaults[.enableClipboardManager] {
                 Section {
-                    Defaults.Toggle("Show Clipboard Icon", key: .showClipboardIcon)
+                    Defaults.Toggle("Show clipboard icon", key: .showClipboardIcon)
                     
-                    HStack {
-                        Text("History Size")
-                        Spacer()
-                        Picker("History Size", selection: $clipboardHistorySize) {
-                            Text("3 items").tag(3)
-                            Text("5 items").tag(5)
-                            Text("7 items").tag(7)
-                            Text("10 items").tag(10)
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Text("History size")
+                            Spacer()
+                            Text("\(Defaults[.clipboardHistorySize]) items")
+                                .foregroundStyle(.secondary)
                         }
-                        .pickerStyle(.menu)
-                        .frame(width: 100)
-                    }
-                    
-                    HStack {
-                        Text("Current Items")
-                        Spacer()
-                        Text("\(clipboardManager.clipboardHistory.count)")
-                            .foregroundColor(.secondary)
-                    }
-                    
-                    HStack {
-                        Text("Monitoring Status")
-                        Spacer()
-                        Text(clipboardManager.isMonitoring ? "Active" : "Stopped")
-                            .foregroundColor(clipboardManager.isMonitoring ? .green : .secondary)
+                        Slider(
+                            value: Binding(
+                                get: { Double(Defaults[.clipboardHistorySize]) },
+                                set: { Defaults[.clipboardHistorySize] = Int($0) }
+                            ),
+                            in: 3...10,
+                            step: 1
+                        )
                     }
                 } header: {
                     Text("Settings")
                 } footer: {
-                    Text("The clipboard icon appears in the header next to the settings gear when enabled. Use the global shortcut Cmd+Shift+V or click the icon to access history.")
-                }
-                
-                Section {
-                    Button("Clear Clipboard History") {
-                        clipboardManager.clearHistory()
-                    }
-                    .foregroundColor(.red)
-                    .disabled(clipboardManager.clipboardHistory.isEmpty)
-                } header: {
-                    Text("Actions")
-                } footer: {
-                    Text("This will permanently delete all stored clipboard history. The clipboard button is located to the left of the settings gear in the header.")
-                }
-                
-                if !clipboardManager.clipboardHistory.isEmpty {
-                    Section {
-                        ForEach(clipboardManager.clipboardHistory) { item in
-                            VStack(alignment: .leading, spacing: 4) {
-                                HStack {
-                                    Image(systemName: item.type.icon)
-                                        .foregroundColor(.blue)
-                                        .frame(width: 16)
-                                    Text(item.type.displayName)
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
-                                    Spacer()
-                                    Text(timeAgoString(from: item.timestamp))
-                                        .font(.caption2)
-                                        .foregroundColor(.secondary)
-                                }
-                                Text(item.preview)
-                                    .font(.system(.body, design: .monospaced))
-                                    .lineLimit(2)
-                            }
-                            .padding(.vertical, 2)
-                        }
-                    } header: {
-                        Text("Current History")
-                    }
+                    Text("Configure how many recent clipboard items to remember (minimum 3).")
                 }
             }
         }
-        .formStyle(.grouped)
         .navigationTitle("Clipboard")
-        .onAppear {
-            if enableClipboardManager && !clipboardManager.isMonitoring {
-                clipboardManager.startMonitoring()
-            }
-        }
-    }
-    
-    private func timeAgoString(from date: Date) -> String {
-        let interval = Date().timeIntervalSince(date)
-        
-        if interval < 60 {
-            return "Just now"
-        } else if interval < 3600 {
-            let minutes = Int(interval / 60)
-            return "\(minutes)m ago"
-        } else if interval < 86400 {
-            let hours = Int(interval / 3600)
-            return "\(hours)h ago"
-        } else {
-            let days = Int(interval / 86400)
-            return "\(days)d ago"
-        }
     }
 }
 

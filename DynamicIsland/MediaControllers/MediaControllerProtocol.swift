@@ -6,16 +6,19 @@
 //
 
 import Foundation
-import AppKit
+import Combine
 
 protocol MediaControllerProtocol: ObservableObject {
-    var playbackStatePublisher: Published<PlaybackState>.Publisher { get }
-    func play()
-    func pause()
-    func seek(to time: Double)
-    func nextTrack()
-    func previousTrack()
-    func togglePlay()
+    var playbackStatePublisher: AnyPublisher<PlaybackState, Never> { get }
+    var isWorking: Bool { get }
+    func play() async
+    func pause() async
+    func seek(to time: Double) async
+    func nextTrack() async
+    func previousTrack() async
+    func togglePlay() async
+    func toggleShuffle() async
+    func toggleRepeat() async
     func isActive() -> Bool
-    func updatePlaybackInfo()
+    func updatePlaybackInfo() async
 }

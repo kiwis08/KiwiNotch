@@ -18,14 +18,11 @@
 		7E61181C2E24071E0050006C /* MacroVisionKit in Frameworks */ = {isa = PBXBuildFile; productRef = 146BC4362D366E9B0047C66A /* MacroVisionKit */; };
 		7E8130402E3FB40500E08F3F /* mediaremote-adapter.pl in Resources */ = {isa = PBXBuildFile; fileRef = 7E81303D2E3FB40500E08F3F /* mediaremote-adapter.pl */; };
 		7E8130412E3FB40500E08F3F /* NowPlayingTestClient in Resources */ = {isa = PBXBuildFile; fileRef = 7E81303E2E3FB40500E08F3F /* NowPlayingTestClient */; };
-		BA90505C953246D0AB206451 /* MediaRemoteAdapter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F4C1DD09EC134302938E84F6 /* MediaRemoteAdapter.framework */; };
-		C61F69420FB64DA98516CFBC /* MediaRemoteAdapter.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F4C1DD09EC134302938E84F6 /* MediaRemoteAdapter.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		7E81303D2E3FB40500E08F3F /* mediaremote-adapter.pl */ = {isa = PBXFileReference; lastKnownFileType = text.script.perl; path = "mediaremote-adapter.pl"; sourceTree = "<group>"; };
 		7E81303E2E3FB40500E08F3F /* NowPlayingTestClient */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = NowPlayingTestClient; sourceTree = "<group>"; };
-		F4C1DD09EC134302938E84F6 /* MediaRemoteAdapter.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MediaRemoteAdapter.framework; path = "Frameworks/MediaRemoteAdapter.framework"; sourceTree = SOURCE_ROOT; };
 		F54406E72CD4987A00C7AFD9 /* DynamicIsland.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DynamicIsland.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -42,7 +39,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BA90505C953246D0AB206451 /* MediaRemoteAdapter.framework in Frameworks */,
 				7E61181C2E24071E0050006C /* MacroVisionKit in Frameworks */,
 				7E61181B2E24071E0050006C /* LottieUI in Frameworks */,
 				7E61181A2E24071E0050006C /* SwiftUIIntrospect in Frameworks */,
@@ -57,27 +53,12 @@
 		};
 /* End PBXFrameworksBuildPhase section */
 
-/* Begin PBXCopyFilesBuildPhase section */
-		B933CDB48C2F42C2887A9836 /* Embed Frameworks */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 12;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-				C61F69420FB64DA98516CFBC /* MediaRemoteAdapter.framework in Embed Frameworks */,
-			);
-			name = "Embed Frameworks";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXCopyFilesBuildPhase section */
-
 /* Begin PBXGroup section */
 		7E81303F2E3FB40500E08F3F /* mediaremote-adapter */ = {
 			isa = PBXGroup;
 			children = (
 				7E81303D2E3FB40500E08F3F /* mediaremote-adapter.pl */,
 				7E81303E2E3FB40500E08F3F /* NowPlayingTestClient */,
-				F4C1DD09EC134302938E84F6 /* MediaRemoteAdapter.framework */,
 			);
 			path = "mediaremote-adapter";
 			sourceTree = "<group>";
@@ -117,7 +98,6 @@
 				F54406E32CD4987A00C7AFD9 /* Sources */,
 				F54406E42CD4987A00C7AFD9 /* Frameworks */,
 				F54406E52CD4987A00C7AFD9 /* Resources */,
-				B933CDB48C2F42C2887A9836 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -343,8 +323,8 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
-					"$(PROJECT_DIR)/Frameworks",
-					"$(PROJECT_DIR)/mediaremote-adapter",
+					"$(SDKROOT)/../../../../../../../../../Users/hariharan/HobbyProjects/DynamicIsland",
+					"$(PROJECT_DIR)/mediaremote-adapter\\ 2",
 				);
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSAppleEventsUsageDescription = "Need for Spotify and Apple Music";
@@ -376,8 +356,8 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
-					"$(PROJECT_DIR)/Frameworks",
-					"$(PROJECT_DIR)/mediaremote-adapter",
+					"$(SDKROOT)/../../../../../../../../../Users/hariharan/HobbyProjects/DynamicIsland",
+					"$(PROJECT_DIR)/mediaremote-adapter\\ 2",
 				);
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSAppleEventsUsageDescription = "Need for Spotify and Apple Music";
