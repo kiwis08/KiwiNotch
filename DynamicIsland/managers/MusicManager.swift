@@ -274,7 +274,17 @@ class MusicManager: ObservableObject {
                 self.repeatMode = state.repeatMode
             }
             
-            self.timestampDate = state.lastUpdated
+            // Update timestamp - use current time if state doesn't provide recent timestamp
+            let stateTimestamp = state.lastUpdated
+            let now = Date()
+            
+            // If the state timestamp is very recent (within 1 second), use it
+            // Otherwise, use current time for better real-time calculation
+            if abs(stateTimestamp.timeIntervalSince(now)) < 1.0 {
+                self.timestampDate = stateTimestamp
+            } else {
+                self.timestampDate = now
+            }
         }
         
         // Execute the batch update on the main thread

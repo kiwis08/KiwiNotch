@@ -97,6 +97,7 @@ struct AlbumArtView: View {
 
 struct MusicControlsView: View {
     @ObservedObject var musicManager = MusicManager.shared
+    @EnvironmentObject var vm: DynamicIslandViewModel
     @State private var sliderValue: Double = 0
     @State private var dragging: Bool = false
     @State private var lastDragged: Date = .distantPast
@@ -108,6 +109,16 @@ struct MusicControlsView: View {
         }
         .buttonStyle(PlainButtonStyle())
         .frame(minWidth: Defaults[.showMirror] && Defaults[.showCalendar] ? 140 : 180)
+        .onAppear {
+            // Initialize slider value when view appears
+            sliderValue = musicManager.elapsedTime
+        }
+        .onChange(of: vm.notchState) { _, newState in
+            // Reset slider value when notch opens to prevent stuck state
+            if newState == .open && !dragging {
+                sliderValue = musicManager.elapsedTime
+            }
+        }
     }
 
     private var songInfoAndSlider: some View {
@@ -137,7 +148,7 @@ struct MusicControlsView: View {
     }
 
     private var musicSlider: some View {
-        TimelineView(.animation(minimumInterval: musicManager.playbackRate > 0 ? 0.1 : nil)) { timeline in
+        TimelineView(.animation(minimumInterval: 0.05)) { timeline in
             MusicSliderView(
                 sliderValue: $sliderValue,
                 duration: $musicManager.songDuration,
@@ -278,7 +289,7 @@ struct MusicSliderView: View {
 
     var currentElapsedTime: Double {
         // A small buffer is needed to ensure a meaningful difference between the two dates
-        guard !dragging, timestampDate.timeIntervalSince(lastDragged) > -0.0001, (timestampDate > lastUpdated || ignoreLastUpdated) else { return sliderValue }
+        guard !dragging, timestampDate.timeIntervalSince(lastDragged) > -1 else { return sliderValue }
         let timeDifference = isPlaying ? currentDate.timeIntervalSince(timestampDate) : 0
         let elapsed = elapsedTime + (timeDifference * playbackRate)
         return min(elapsed, duration)
