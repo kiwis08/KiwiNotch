@@ -52,8 +52,6 @@ class DynamicIslandViewCoordinator: ObservableObject {
     var notifier: TheBoringWorkerNotifier = .init()
     
     @Published var currentView: NotchViews = .home
-    private var sneakPeekDispatch: DispatchWorkItem?
-    private var expandingViewDispatch: DispatchWorkItem?
     
     
     @AppStorage("firstLaunch") var firstLaunch: Bool = true
@@ -109,21 +107,35 @@ class DynamicIslandViewCoordinator: ObservableObject {
         }
     
     @objc func sneakPeekEvent(_ notification: Notification) {
-            let decoder = JSONDecoder()
-            if let decodedData = try? decoder.decode(SharedSneakPeek.self, from: notification.userInfo?.first?.value as! Data) {
-                let contentType = decodedData.type == "brightness" ? SneakContentType.brightness : decodedData.type == "volume" ? SneakContentType.volume : decodedData.type == "backlight" ? SneakContentType.backlight : decodedData.type == "mic" ? SneakContentType.mic : decodedData.type == "timer" ? SneakContentType.timer : SneakContentType.brightness
+        let decoder = JSONDecoder()
+        if let decodedData = try? decoder.decode(
+            SharedSneakPeek.self, from: notification.userInfo?.first?.value as! Data)
+        {
+            let contentType =
+                decodedData.type == "brightness"
+                ? SneakContentType.brightness
+                : decodedData.type == "volume"
+                    ? SneakContentType.volume
+                    : decodedData.type == "backlight"
+                        ? SneakContentType.backlight
+                        : decodedData.type == "mic"
+                            ? SneakContentType.mic 
+                            : decodedData.type == "timer"
+                                ? SneakContentType.timer : SneakContentType.brightness
+            
+            let formatter = NumberFormatter()
+            formatter.locale = Locale(identifier: "en_US_POSIX")
+            formatter.numberStyle = .decimal
+            let value = CGFloat((formatter.number(from: decodedData.value) ?? 0.0).floatValue)
+            let icon = decodedData.icon
 
-                let value = CGFloat((NumberFormatter().number(from: decodedData.value) ?? 0.0).floatValue)
-                let icon = decodedData.icon
-                
-                print(decodedData)
-                
-                toggleSneakPeek(status: decodedData.show, type: contentType, value: value, icon: icon)
-                
-            } else {
-                print("Failed to decode JSON data")
-            }
+            print("Decoded: \(decodedData), Parsed value: \(value)")
+
+            toggleSneakPeek(status: decodedData.show, type: contentType, value: value, icon: icon)
+        } else {
+            print("Failed to decode JSON data")
         }
+    }
     
     func toggleSneakPeek(status: Bool, type: SneakContentType, duration: TimeInterval = 1.5, value: CGFloat = 0, icon: String = "") {
         sneakPeekDuration = duration
@@ -148,35 +160,41 @@ class DynamicIslandViewCoordinator: ObservableObject {
     }
     
     private var sneakPeekDuration: TimeInterval = 1.5
-    
-    @Published var sneakPeek: sneakPeek = .init() {
-        didSet {
-            if sneakPeek.show {
-                sneakPeekDispatch?.cancel()
+    private var sneakPeekTask: Task<Void, Never>?
 
-                sneakPeekDispatch = DispatchWorkItem { [weak self] in
-                    guard let self = self else { return }
-                    withAnimation {
-                        self.toggleSneakPeek(status: false, type: SneakContentType.music)
-                        self.sneakPeekDuration = 1.5
-                    }
+    // Helper function to manage sneakPeek timer using Swift Concurrency
+    private func scheduleSneakPeekHide(after duration: TimeInterval) {
+        sneakPeekTask?.cancel()
+
+        sneakPeekTask = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(duration))
+            guard let self = self, !Task.isCancelled else { return }
+            await MainActor.run {
+                withAnimation {
+                    self.toggleSneakPeek(status: false, type: .music)
+                    self.sneakPeekDuration = 1.5
                 }
-                DispatchQueue.main
-                    .asyncAfter(
-                        deadline: .now() + self.sneakPeekDuration,
-                        execute: sneakPeekDispatch!
-                    )
             }
         }
     }
     
-    func toggleExpandingView(status: Bool, type: SneakContentType, value: CGFloat = 0, browser: BrowserType = .chromium) {
-        if expandingView.show {
-            withAnimation(.smooth) {
-                self.expandingView.show = false
+    @Published var sneakPeek: sneakPeek = .init() {
+        didSet {
+            if sneakPeek.show {
+                scheduleSneakPeekHide(after: sneakPeekDuration)
+            } else {
+                sneakPeekTask?.cancel()
             }
         }
-        DispatchQueue.main.async {
+    }
+    
+    func toggleExpandingView(
+        status: Bool,
+        type: SneakContentType,
+        value: CGFloat = 0,
+        browser: BrowserType = .chromium
+    ) {
+        Task { @MainActor in
             withAnimation(.smooth) {
                 self.expandingView.show = status
                 self.expandingView.type = type
@@ -185,18 +203,21 @@ class DynamicIslandViewCoordinator: ObservableObject {
             }
         }
     }
+
+    private var expandingViewTask: Task<Void, Never>?
     
     @Published var expandingView: ExpandedItem = .init() {
         didSet {
             if expandingView.show {
-                expandingViewDispatch?.cancel()
-
-                expandingViewDispatch = DispatchWorkItem { [weak self] in
-                    guard let self = self else { return }
-                    self.toggleExpandingView(status: false, type: SneakContentType.battery)
+                expandingViewTask?.cancel()
+                let duration: TimeInterval = (expandingView.type == .download ? 2 : 3)
+                expandingViewTask = Task { [weak self] in
+                    try? await Task.sleep(for: .seconds(duration))
+                    guard let self = self, !Task.isCancelled else { return }
+                    self.toggleExpandingView(status: false, type: .battery)
                 }
-
-                DispatchQueue.main.asyncAfter(deadline: .now() + (expandingView.type == .download ? 2 : 3), execute: expandingViewDispatch!)
+            } else {
+                expandingViewTask?.cancel()
             }
         }
     }

@@ -55,10 +55,10 @@ struct DynamicNotchApp: App {
                     workspace.openApplication(at: appURL, configuration: configuration)
                 }
 
-                NSApplication.shared.terminate(nil)
+                NSApplication.shared.terminate(self)
             }
             Button("Quit", role: .destructive) {
-                NSApp.terminate(nil)
+                NSApplication.shared.terminate(self)
             }
             .keyboardShortcut(KeyEquivalent("Q"), modifiers: .command)
         }
@@ -80,7 +80,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     @ObservedObject var coordinator = DynamicIslandViewCoordinator.shared
     var whatsNewWindow: NSWindow?
     var timer: Timer?
-    let calendarManager = CalendarManager()
+    let calendarManager = CalendarManager.shared
     let webcamManager = WebcamManager.shared
     var closeNotchWorkItem: DispatchWorkItem?
     private var previousScreens: [NSScreen]?
