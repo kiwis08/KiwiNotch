@@ -265,6 +265,15 @@ class MusicManager: ObservableObject {
                 self.bundleIdentifier = state.bundleIdentifier
             }
             
+            // Update shuffle and repeat state from controller
+            if state.isShuffled != self.isShuffled {
+                self.isShuffled = state.isShuffled
+            }
+            
+            if state.repeatMode != self.repeatMode {
+                self.repeatMode = state.repeatMode
+            }
+            
             self.timestampDate = state.lastUpdated
         }
         
@@ -377,13 +386,38 @@ class MusicManager: ObservableObject {
     
     func toggleShuffle() {
         Task {
+            // Provide immediate UI feedback
+            await MainActor.run {
+                self.isShuffled.toggle()
+            }
+            
+            // Execute the actual command
             await activeController?.toggleShuffle()
+            
+            // Note: The actual state will be updated when the controller reports back
+            // via updateFromPlaybackState if the command provides status feedback
         }
     }
 
     func toggleRepeat() {
         Task {
+            // Provide immediate UI feedback
+            await MainActor.run {
+                switch self.repeatMode {
+                case .off:
+                    self.repeatMode = .all
+                case .all:
+                    self.repeatMode = .one
+                case .one:
+                    self.repeatMode = .off
+                }
+            }
+            
+            // Execute the actual command
             await activeController?.toggleRepeat()
+            
+            // Note: The actual state will be updated when the controller reports back
+            // via updateFromPlaybackState if the command provides status feedback
         }
     }
     

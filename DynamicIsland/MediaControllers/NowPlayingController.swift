@@ -134,13 +134,15 @@ final class NowPlayingController: ObservableObject, MediaControllerProtocol {
     private func setupNowPlayingObserver() {
         let process = Process()
         guard
-            let scriptURL = Bundle.main.url(forResource: "mediaremote-adapter", withExtension: "pl"),
-            let frameworkPath = Bundle.main.privateFrameworksPath?.appending("/MediaRemoteAdapter.framework")
+            let scriptURL = Bundle.main.url(forResource: "mediaremote-adapter", withExtension: "pl")
         else {
-            print("⚠️ Could not find mediaremote-adapter.pl script or framework path - NowPlaying controller disabled")
+            print("⚠️ Could not find mediaremote-adapter.pl script - NowPlaying controller disabled")
             isResourcesAvailable = false
             return
         }
+        
+        let bundlePath = Bundle.main.bundlePath
+        let frameworkPath = bundlePath + "/Contents/Frameworks/MediaRemoteAdapter.framework"
         
         isResourcesAvailable = true
         process.executableURL = URL(fileURLWithPath: "/usr/bin/perl")
