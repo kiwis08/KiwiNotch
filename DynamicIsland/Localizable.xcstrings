@@ -272,7 +272,13 @@
     "Clear Clipboard History" : {
 
     },
+    "Clear clipboard history removes recent copies. Clear pinned items removes your favorites. Both actions are permanent." : {
+
+    },
     "Clear Data" : {
+
+    },
+    "Clear Pinned Items" : {
 
     },
     "Clipboard" : {
@@ -784,7 +790,13 @@
     "No extension installed" : {
 
     },
+    "No favorites" : {
+
+    },
     "No Graphs Enabled" : {
+
+    },
+    "No results found" : {
 
     },
     "Non-notch display height" : {
@@ -853,6 +865,12 @@
         }
       }
     },
+    "Pin items from history to save them here" : {
+
+    },
+    "Pinned Items" : {
+
+    },
     "Plugged In" : {
 
     },
@@ -919,6 +937,9 @@
 
     },
     "Running" : {
+
+    },
+    "Search clipboard..." : {
 
     },
     "seconds" : {
@@ -1084,13 +1105,7 @@
     "System features" : {
 
     },
-    "The clipboard icon appears in the header next to the settings gear when enabled. Use the global shortcut Cmd+Shift+V or click the icon to access history." : {
-
-    },
     "TheDynamicIsland" : {
-
-    },
-    "This will permanently delete all stored clipboard history. The clipboard button is located to the left of the settings gear in the header." : {
 
     },
     "Time to Full Charge: %lld min" : {
@@ -1121,6 +1136,9 @@
 
     },
     "Transform your notch truly yours" : {
+
+    },
+    "Try adjusting your search terms" : {
 
     },
     "Two-finger swipe up on notch to close, two-finger swipe down on notch to open when **Open notch on hover** option is disabled" : {
@@ -1177,6 +1195,9 @@
 
     },
     "When enabled, the Stats tab will display real-time system performance graphs. This feature requires system permissions and may use additional battery." : {
+
+    },
+    "Window Mode shows clipboard in a moveable window like Raycast with tabs for history and favorites. When disabled, clipboard appears in a popover attached to the Dynamic Island." : {
 
     },
     "With %lld graphs enabled, the Dynamic Island will expand horizontally to accommodate all graphs in a single row." : {

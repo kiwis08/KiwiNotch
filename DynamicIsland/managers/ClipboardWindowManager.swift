@@ -1,0 +1,104 @@
+//
+//  ClipboardWindowManager.swift
+//  DynamicIsland
+//
+//  Created by GitHub Copilot on 12/08/25.
+//
+
+import SwiftUI
+import AppKit
+
+class ClipboardWindowManager: ObservableObject {
+    static let shared = ClipboardWindowManager()
+    
+    private var clipboardWindow: NSWindow?
+    
+    private init() {}
+    
+    func showClipboardWindow() {
+        if let existingWindow = clipboardWindow {
+            existingWindow.makeKeyAndOrderFront(nil)
+            NSApp.activate(ignoringOtherApps: true)
+            return
+        }
+        
+        // Create the window
+        let window = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 400, height: 300),
+            styleMask: [.titled, .closable, .resizable],
+            backing: .buffered,
+            defer: false
+        )
+        
+        window.title = "Clipboard Manager"
+        window.isMovableByWindowBackground = true
+        window.level = .floating
+        window.isReleasedWhenClosed = false
+        window.hasShadow = true
+        window.titlebarAppearsTransparent = true
+        window.styleMask.insert(.fullSizeContentView)
+        
+        // Set minimum and maximum sizes
+        window.minSize = NSSize(width: 350, height: 250)
+        window.maxSize = NSSize(width: 600, height: 500)
+        
+        // Center the window
+        if let screen = NSScreen.main {
+            let screenFrame = screen.visibleFrame
+            let windowFrame = window.frame
+            let x = (screenFrame.width - windowFrame.width) / 2 + screenFrame.minX
+            let y = (screenFrame.height - windowFrame.height) / 2 + screenFrame.minY
+            window.setFrameOrigin(NSPoint(x: x, y: y))
+        }
+        
+        // Set the content view
+        let contentView = ClipboardWindow()
+        let hostingView = NSHostingView(rootView: contentView)
+        window.contentView = hostingView
+        
+        // Handle window closing
+        window.delegate = WindowDelegate { [weak self] in
+            self?.clipboardWindow = nil
+        }
+        
+        self.clipboardWindow = window
+        window.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+    }
+    
+    func hideClipboardWindow() {
+        clipboardWindow?.close()
+    }
+    
+    func toggleClipboardWindow() {
+        if let window = clipboardWindow, window.isVisible {
+            hideClipboardWindow()
+        } else {
+            showClipboardWindow()
+        }
+    }
+    
+    var isWindowVisible: Bool {
+        return clipboardWindow?.isVisible ?? false
+    }
+}
+
+private class WindowDelegate: NSObject, NSWindowDelegate {
+    private let onClose: () -> Void
+    
+    init(onClose: @escaping () -> Void) {
+        self.onClose = onClose
+        super.init()
+    }
+    
+    func windowWillClose(_ notification: Notification) {
+        onClose()
+    }
+    
+    func windowShouldClose(_ sender: NSWindow) -> Bool {
+        // Hide instead of close when user clicks close button
+        sender.orderOut(nil)
+        onClose()
+        return false
+    }
+}

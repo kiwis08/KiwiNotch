@@ -1589,6 +1589,7 @@ struct ClipboardSettings: View {
     @Default(.enableClipboardManager) var enableClipboardManager
     @Default(.clipboardHistorySize) var clipboardHistorySize
     @Default(.showClipboardIcon) var showClipboardIcon
+    @Default(.clipboardWindowMode) var clipboardWindowMode
     
     var body: some View {
         Form {
@@ -1611,6 +1612,8 @@ struct ClipboardSettings: View {
                 Section {
                     Defaults.Toggle("Show Clipboard Icon", key: .showClipboardIcon)
                     
+                    Defaults.Toggle("Window Mode", key: .clipboardWindowMode)
+                    
                     HStack {
                         Text("History Size")
                         Spacer()
@@ -1632,6 +1635,13 @@ struct ClipboardSettings: View {
                     }
                     
                     HStack {
+                        Text("Pinned Items")
+                        Spacer()
+                        Text("\(clipboardManager.pinnedItems.count)")
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    HStack {
                         Text("Monitoring Status")
                         Spacer()
                         Text(clipboardManager.isMonitoring ? "Active" : "Stopped")
@@ -1640,7 +1650,7 @@ struct ClipboardSettings: View {
                 } header: {
                     Text("Settings")
                 } footer: {
-                    Text("The clipboard icon appears in the header next to the settings gear when enabled. Use the global shortcut Cmd+Shift+V or click the icon to access history.")
+                    Text("Window Mode shows clipboard in a moveable window like Raycast with tabs for history and favorites. When disabled, clipboard appears in a popover attached to the Dynamic Island.")
                 }
                 
                 Section {
@@ -1649,10 +1659,17 @@ struct ClipboardSettings: View {
                     }
                     .foregroundColor(.red)
                     .disabled(clipboardManager.clipboardHistory.isEmpty)
+                    
+                    Button("Clear Pinned Items") {
+                        clipboardManager.pinnedItems.removeAll()
+                        clipboardManager.savePinnedItemsToDefaults()
+                    }
+                    .foregroundColor(.red)
+                    .disabled(clipboardManager.pinnedItems.isEmpty)
                 } header: {
                     Text("Actions")
                 } footer: {
-                    Text("This will permanently delete all stored clipboard history. The clipboard button is located to the left of the settings gear in the header.")
+                    Text("Clear clipboard history removes recent copies. Clear pinned items removes your favorites. Both actions are permanent.")
                 }
                 
                 if !clipboardManager.clipboardHistory.isEmpty {

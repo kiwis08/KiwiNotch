@@ -170,6 +170,7 @@ extension Defaults.Keys {
     static let enableClipboardManager = Key<Bool>("enableClipboardManager", default: true)
     static let clipboardHistorySize = Key<Int>("clipboardHistorySize", default: 3)
     static let showClipboardIcon = Key<Bool>("showClipboardIcon", default: true)
+    static let clipboardWindowMode = Key<Bool>("clipboardWindowMode", default: true)
     
     // MARK: Keyboard Shortcuts
     static let enableShortcuts = Key<Bool>("enableShortcuts", default: true)

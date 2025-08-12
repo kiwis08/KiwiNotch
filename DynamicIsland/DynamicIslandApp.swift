@@ -445,37 +445,44 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             // Only open clipboard if the feature is enabled
             guard Defaults[.enableClipboardManager] else { return }
             
-            // Find the appropriate view model based on mouse location
-            let mouseLocation = NSEvent.mouseLocation
-            var viewModel = self.vm
-            
-            if Defaults[.showOnAllDisplays] {
-                for screen in NSScreen.screens {
-                    if screen.frame.contains(mouseLocation) {
-                        if let screenViewModel = self.viewModels[screen] {
-                            viewModel = screenViewModel
-                            break
-                        }
-                    }
-                }
-            }
-            
-            // Open the notch if it's closed
-            if viewModel.notchState == .closed {
-                viewModel.open()
-                
-                // Wait a bit for the notch to open before toggling clipboard
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                    self.coordinator.toggleClipboardPopover()
-                }
-            } else {
-                // If notch is already open, toggle immediately
-                self.coordinator.toggleClipboardPopover()
-            }
-            
             // Start clipboard monitoring if not already running
             if !ClipboardManager.shared.isMonitoring {
                 ClipboardManager.shared.startMonitoring()
+            }
+            
+            // Check if window mode is enabled
+            if Defaults[.clipboardWindowMode] {
+                // Use window interface
+                ClipboardWindowManager.shared.toggleClipboardWindow()
+            } else {
+                // Use traditional popover interface
+                // Find the appropriate view model based on mouse location
+                let mouseLocation = NSEvent.mouseLocation
+                var viewModel = self.vm
+                
+                if Defaults[.showOnAllDisplays] {
+                    for screen in NSScreen.screens {
+                        if screen.frame.contains(mouseLocation) {
+                            if let screenViewModel = self.viewModels[screen] {
+                                viewModel = screenViewModel
+                                break
+                            }
+                        }
+                    }
+                }
+                
+                // Open the notch if it's closed
+                if viewModel.notchState == .closed {
+                    viewModel.open()
+                    
+                    // Wait a bit for the notch to open before toggling clipboard
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                        self.coordinator.toggleClipboardPopover()
+                    }
+                } else {
+                    // If notch is already open, toggle immediately
+                    self.coordinator.toggleClipboardPopover()
+                }
             }
         }
         

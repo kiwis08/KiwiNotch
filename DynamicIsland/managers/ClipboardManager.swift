@@ -18,6 +18,7 @@ struct ClipboardItem: Identifiable, Codable {
     let type: ClipboardItemType
     let timestamp: Date
     let preview: String
+    var isPinned: Bool = false
     
     // Store different types of data - avoid large binary data in UserDefaults
     let stringData: String?
@@ -90,6 +91,14 @@ struct ClipboardItem: Identifiable, Codable {
         return try? Data(contentsOf: fileURL)
     }
     
+    // Helper to check if this item has the same content as another
+    func isSameContent(as other: ClipboardItem) -> Bool {
+        return stringData == other.stringData &&
+               imageFileName == other.imageFileName &&
+               fileURLs == other.fileURLs &&
+               type == other.type
+    }
+    
     static func generatePreview(stringData: String, type: ClipboardItemType) -> String {
         switch type {
         case .text:
@@ -149,6 +158,7 @@ class ClipboardManager: ObservableObject {
     static let shared = ClipboardManager()
     
     @Published var clipboardHistory: [ClipboardItem] = []
+    @Published var pinnedItems: [ClipboardItem] = []
     @Published var isMonitoring: Bool = false
     
     private var timer: Timer?
@@ -157,6 +167,15 @@ class ClipboardManager: ObservableObject {
     // Use configurable history size from settings
     private var maxHistoryItems: Int {
         return Defaults[.clipboardHistorySize]
+    }
+    
+    // Computed properties for filtered lists
+    var regularHistory: [ClipboardItem] {
+        clipboardHistory.filter { !$0.isPinned }
+    }
+    
+    var pinnedHistory: [ClipboardItem] {
+        pinnedItems
     }
     
     // Directory for storing clipboard data files
@@ -252,6 +271,58 @@ class ClipboardManager: ObservableObject {
         
         clipboardHistory.removeAll()
         saveHistoryToDefaults()
+    }
+    
+    func pinItem(_ item: ClipboardItem) {
+        // Update the item to be pinned
+        var pinnedItem = item
+        pinnedItem.isPinned = true
+        
+        // Remove from regular history if it exists there
+        clipboardHistory.removeAll { $0.id == item.id }
+        
+        // Add to pinned items if not already there
+        if !pinnedItems.contains(where: { $0.id == item.id }) {
+            pinnedItems.append(pinnedItem)
+        }
+        
+        saveHistoryToDefaults()
+        savePinnedItemsToDefaults()
+    }
+    
+    func unpinItem(_ item: ClipboardItem) {
+        // Remove from pinned items
+        pinnedItems.removeAll { $0.id == item.id }
+        
+        // Update the item to be unpinned and add back to regular history
+        var unpinnedItem = item
+        unpinnedItem.isPinned = false
+        
+        // Add back to regular history at the top
+        clipboardHistory.insert(unpinnedItem, at: 0)
+        
+        // Maintain history size limit
+        if clipboardHistory.count > maxHistoryItems {
+            let itemsToDelete = Array(clipboardHistory.dropFirst(maxHistoryItems))
+            for oldItem in itemsToDelete {
+                if let fileName = oldItem.imageFileName {
+                    let fileURL = ClipboardManager.clipboardDataDirectory.appendingPathComponent(fileName)
+                    try? FileManager.default.removeItem(at: fileURL)
+                }
+            }
+            clipboardHistory = Array(clipboardHistory.prefix(maxHistoryItems))
+        }
+        
+        saveHistoryToDefaults()
+        savePinnedItemsToDefaults()
+    }
+    
+    func togglePin(for item: ClipboardItem) {
+        if item.isPinned || pinnedItems.contains(where: { $0.id == item.id }) {
+            unpinItem(item)
+        } else {
+            pinItem(item)
+        }
     }
     
     // MARK: - Private Methods
@@ -438,10 +509,21 @@ class ClipboardManager: ObservableObject {
         }
     }
     
+    func savePinnedItemsToDefaults() {
+        if let encoded = try? JSONEncoder().encode(pinnedItems) {
+            UserDefaults.standard.set(encoded, forKey: "ClipboardPinnedItems")
+        }
+    }
+    
     private func loadHistoryFromDefaults() {
         if let data = UserDefaults.standard.data(forKey: "ClipboardHistory"),
            let history = try? JSONDecoder().decode([ClipboardItem].self, from: data) {
             clipboardHistory = history
+        }
+        
+        if let data = UserDefaults.standard.data(forKey: "ClipboardPinnedItems"),
+           let pinned = try? JSONDecoder().decode([ClipboardItem].self, from: data) {
+            pinnedItems = pinned
         }
     }
 }
