@@ -63,7 +63,25 @@ struct DynamicIslandHeader: View {
                     
                     if Defaults[.enableClipboardManager] && Defaults[.showClipboardIcon] {
                         Button(action: {
-                            showClipboardPopover.toggle()
+                            // Use the same smart logic as the keyboard shortcut
+                            let displayMode = Defaults[.clipboardDisplayMode]
+                            let shouldUseWindow: Bool
+                            
+                            switch displayMode {
+                            case .window:
+                                shouldUseWindow = true
+                            case .popover:
+                                shouldUseWindow = false
+                            case .auto:
+                                // For header button clicks, prefer popover since user is already interacting with notch
+                                shouldUseWindow = false
+                            }
+                            
+                            if shouldUseWindow {
+                                ClipboardWindowManager.shared.toggleClipboardWindow()
+                            } else {
+                                showClipboardPopover.toggle()
+                            }
                         }) {
                             Capsule()
                                 .fill(.black)

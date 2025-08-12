@@ -30,6 +30,28 @@ enum CalendarSelectionState: Codable, Defaults.Serializable {
     case selected(Set<String>)
 }
 
+enum ClipboardDisplayMode: String, CaseIterable, Codable, Defaults.Serializable {
+    case auto = "auto"           // Automatically choose: popover on desktop, window in fullscreen
+    case popover = "popover"     // Always use popover (attached to notch)
+    case window = "window"       // Always use standalone window
+    
+    var displayName: String {
+        switch self {
+        case .auto: return "Auto (Smart)"
+        case .popover: return "Popover"
+        case .window: return "Window"
+        }
+    }
+    
+    var description: String {
+        switch self {
+        case .auto: return "Automatically chooses the best display mode based on context"
+        case .popover: return "Always shows clipboard attached to the Dynamic Island"
+        case .window: return "Always shows clipboard in a standalone moveable window"
+        }
+    }
+}
+
 enum HideNotchOption: String, Defaults.Serializable {
     case always
     case nowPlayingOnly
@@ -170,7 +192,7 @@ extension Defaults.Keys {
     static let enableClipboardManager = Key<Bool>("enableClipboardManager", default: true)
     static let clipboardHistorySize = Key<Int>("clipboardHistorySize", default: 3)
     static let showClipboardIcon = Key<Bool>("showClipboardIcon", default: true)
-    static let clipboardWindowMode = Key<Bool>("clipboardWindowMode", default: true)
+    static let clipboardDisplayMode = Key<ClipboardDisplayMode>("clipboardDisplayMode", default: .auto)
     
     // MARK: Keyboard Shortcuts
     static let enableShortcuts = Key<Bool>("enableShortcuts", default: true)

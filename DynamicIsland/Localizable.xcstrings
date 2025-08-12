@@ -137,6 +137,9 @@
     "Appearance" : {
 
     },
+    "Auto mode intelligently chooses between popover (desktop) and window (fullscreen apps) for the best experience. You can override this with manual selection." : {
+
+    },
     "Automatically check for updates" : {
       "localizations" : {
         "en" : {
@@ -387,6 +390,9 @@
 
     },
     "Disk Write" : {
+
+    },
+    "Display Mode" : {
 
     },
     "Download" : {
@@ -1195,9 +1201,6 @@
 
     },
     "When enabled, the Stats tab will display real-time system performance graphs. This feature requires system permissions and may use additional battery." : {
-
-    },
-    "Window Mode shows clipboard in a moveable window like Raycast with tabs for history and favorites. When disabled, clipboard appears in a popover attached to the Dynamic Island." : {
 
     },
     "With %lld graphs enabled, the Dynamic Island will expand horizontally to accommodate all graphs in a single row." : {

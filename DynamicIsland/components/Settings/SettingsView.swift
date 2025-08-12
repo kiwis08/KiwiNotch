@@ -1589,7 +1589,7 @@ struct ClipboardSettings: View {
     @Default(.enableClipboardManager) var enableClipboardManager
     @Default(.clipboardHistorySize) var clipboardHistorySize
     @Default(.showClipboardIcon) var showClipboardIcon
-    @Default(.clipboardWindowMode) var clipboardWindowMode
+    @Default(.clipboardDisplayMode) var clipboardDisplayMode
     
     var body: some View {
         Form {
@@ -1612,7 +1612,24 @@ struct ClipboardSettings: View {
                 Section {
                     Defaults.Toggle("Show Clipboard Icon", key: .showClipboardIcon)
                     
-                    Defaults.Toggle("Window Mode", key: .clipboardWindowMode)
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Text("Display Mode")
+                            Spacer()
+                            Picker("Display Mode", selection: $clipboardDisplayMode) {
+                                ForEach(ClipboardDisplayMode.allCases, id: \.self) { mode in
+                                    Text(mode.displayName).tag(mode)
+                                }
+                            }
+                            .pickerStyle(.menu)
+                            .frame(width: 140)
+                        }
+                        
+                        Text(clipboardDisplayMode.description)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .padding(.leading, 0)
+                    }
                     
                     HStack {
                         Text("History Size")
@@ -1650,7 +1667,7 @@ struct ClipboardSettings: View {
                 } header: {
                     Text("Settings")
                 } footer: {
-                    Text("Window Mode shows clipboard in a moveable window like Raycast with tabs for history and favorites. When disabled, clipboard appears in a popover attached to the Dynamic Island.")
+                    Text("Auto mode intelligently chooses between popover (desktop) and window (fullscreen apps) for the best experience. You can override this with manual selection.")
                 }
                 
                 Section {
