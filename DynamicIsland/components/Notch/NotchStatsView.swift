@@ -118,142 +118,31 @@ struct NotchStatsView: View {
         return graphs
     }
     
-    // New vertical expansion layout system
+    // Simplified and more consistent layout system
     @ViewBuilder
     var statsGridLayout: some View {
         let graphCount = availableGraphs.count
         
-        switch graphCount {
-        case 1...3:
-            // Single row for 1-3 graphs
-            HStack(spacing: 12) {
-                ForEach(0..<graphCount, id: \.self) { index in
-                    graphView(for: availableGraphs[index])
-                        .frame(maxWidth: .infinity)
-                        .transition(.asymmetric(
-                            insertion: .scale.combined(with: .opacity),
-                            removal: .scale.combined(with: .opacity)
-                        ))
-                }
+        // Use LazyVGrid for all cases - more predictable layout behavior
+        LazyVGrid(
+            columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: min(graphCount, 3)),
+            spacing: 12
+        ) {
+            ForEach(0..<graphCount, id: \.self) { index in
+                UnifiedStatsCard(graphData: availableGraphs[index])
+                    .transition(.asymmetric(
+                        insertion: .scale.combined(with: .opacity).animation(.easeInOut(duration: 0.4)),
+                        removal: .scale.combined(with: .opacity).animation(.easeInOut(duration: 0.4))
+                    ))
             }
-            .animation(.easeInOut(duration: 0.25), value: graphCount)
-            
-        case 4:
-            // 2x2 quadrants for 4 graphs
-            VStack(spacing: 12) {
-                HStack(spacing: 12) {
-                    graphView(for: availableGraphs[0])
-                        .frame(maxWidth: .infinity)
-                        .transition(.asymmetric(
-                            insertion: .scale.combined(with: .opacity),
-                            removal: .scale.combined(with: .opacity)
-                        ))
-                    graphView(for: availableGraphs[1])
-                        .frame(maxWidth: .infinity)
-                        .transition(.asymmetric(
-                            insertion: .scale.combined(with: .opacity),
-                            removal: .scale.combined(with: .opacity)
-                        ))
-                }
-                HStack(spacing: 12) {
-                    graphView(for: availableGraphs[2])
-                        .frame(maxWidth: .infinity)
-                        .transition(.asymmetric(
-                            insertion: .scale.combined(with: .opacity),
-                            removal: .scale.combined(with: .opacity)
-                        ))
-                    graphView(for: availableGraphs[3])
-                        .frame(maxWidth: .infinity)
-                        .transition(.asymmetric(
-                            insertion: .scale.combined(with: .opacity),
-                            removal: .scale.combined(with: .opacity)
-                        ))
-                }
-            }
-            .animation(.easeInOut(duration: 0.25), value: graphCount)
-            
-        case 5:
-            // 3 on top, 2 on bottom (taking half space each)
-            VStack(spacing: 12) {
-                // Top row: 3 graphs
-                HStack(spacing: 12) {
-                    graphView(for: availableGraphs[0])
-                        .frame(maxWidth: .infinity)
-                        .transition(.asymmetric(
-                            insertion: .scale.combined(with: .opacity),
-                            removal: .scale.combined(with: .opacity)
-                        ))
-                    graphView(for: availableGraphs[1])
-                        .frame(maxWidth: .infinity)
-                        .transition(.asymmetric(
-                            insertion: .scale.combined(with: .opacity),
-                            removal: .scale.combined(with: .opacity)
-                        ))
-                    graphView(for: availableGraphs[2])
-                        .frame(maxWidth: .infinity)
-                        .transition(.asymmetric(
-                            insertion: .scale.combined(with: .opacity),
-                            removal: .scale.combined(with: .opacity)
-                        ))
-                }
-                // Bottom row: 2 graphs centered
-                HStack(spacing: 12) {
-                    Spacer()
-                    graphView(for: availableGraphs[3])
-                        .frame(maxWidth: .infinity)
-                        .transition(.asymmetric(
-                            insertion: .scale.combined(with: .opacity),
-                            removal: .scale.combined(with: .opacity)
-                        ))
-                    graphView(for: availableGraphs[4])
-                        .frame(maxWidth: .infinity)
-                        .transition(.asymmetric(
-                            insertion: .scale.combined(with: .opacity),
-                            removal: .scale.combined(with: .opacity)
-                        ))
-                    Spacer()
-                }
-            }
-            .animation(.easeInOut(duration: 0.25), value: graphCount)
-            
-        default:
-            // Fallback for more than 5 graphs (shouldn't happen with current settings)
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: min(3, graphCount)), spacing: 12) {
-                ForEach(0..<graphCount, id: \.self) { index in
-                    graphView(for: availableGraphs[index])
-                        .transition(.asymmetric(
-                            insertion: .scale.combined(with: .opacity),
-                            removal: .scale.combined(with: .opacity)
-                        ))
-                }
-            }
-            .animation(.easeInOut(duration: 0.25), value: graphCount)
         }
+        .animation(.easeInOut(duration: 0.4), value: graphCount)
     }
     
-    // Helper function to create graph views
+    // Helper function to create graph views using unified component
     @ViewBuilder
     func graphView(for graphData: GraphData) -> some View {
-        if let singleData = graphData as? SingleGraphData {
-            StatCard(
-                title: singleData.title,
-                value: singleData.value,
-                data: singleData.data,
-                color: singleData.color,
-                icon: singleData.icon
-            )
-        } else if let dualData = graphData as? DualGraphData {
-            DualStatCard(
-                title: dualData.title,
-                positiveValue: dualData.positiveValue,
-                negativeValue: dualData.negativeValue,
-                positiveData: dualData.positiveData,
-                negativeData: dualData.negativeData,
-                positiveColor: dualData.positiveColor,
-                negativeColor: dualData.negativeColor,
-                icon: dualData.icon
-            )
-        }
+        UnifiedStatsCard(graphData: graphData)
     }
 
     var body: some View {
@@ -297,17 +186,17 @@ struct NotchStatsView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .padding()
             } else {
-                // Stats content with vertical expansion layout
+                // Stats content with improved animation coordination
                 ZStack(alignment: .topTrailing) {
                     VStack(spacing: 12) {
-                        // New vertical expansion layout
+                        // Simplified consistent layout
                         statsGridLayout
                     }
                     .padding(16)
-                    .animation(.easeInOut(duration: 0.25), value: availableGraphs.count)
+                    .animation(.easeInOut(duration: 0.4), value: availableGraphs.count)
                     .transition(.asymmetric(
-                        insertion: .scale.combined(with: .opacity),
-                        removal: .scale.combined(with: .opacity)
+                        insertion: .scale.combined(with: .opacity).animation(.easeInOut(duration: 0.4)),
+                        removal: .scale.combined(with: .opacity).animation(.easeInOut(duration: 0.4))
                     ))
                     
                     // Live indicator and controls in top-right corner
@@ -365,25 +254,24 @@ struct NotchStatsView: View {
         .onDisappear {
             // Keep monitoring running when tab is not visible
         }
+        .animation(.easeInOut(duration: 0.4), value: enableStatsFeature)
+        .animation(.easeInOut(duration: 0.4), value: availableGraphs.count)
     }
 }
 
-struct StatCard: View {
-    let title: String
-    let value: String
-    let data: [Double]
-    let color: Color
-    let icon: String
+// Unified Stats Card Component - handles both single and dual data types
+struct UnifiedStatsCard: View {
+    let graphData: GraphData
     
     var body: some View {
         VStack(spacing: 6) {
-            // Header - more compact
+            // Header - consistent across all card types
             HStack(spacing: 4) {
-                Image(systemName: icon)
-                    .foregroundColor(color)
+                Image(systemName: graphData.icon)
+                    .foregroundColor(graphData.color)
                     .font(.caption2)
                 
-                Text(title)
+                Text(graphData.title)
                     .font(.caption2)
                     .fontWeight(.medium)
                     .foregroundColor(.secondary)
@@ -391,76 +279,47 @@ struct StatCard: View {
                 Spacer()
             }
             
-            // Current value - larger and more prominent
-            Text(value)
-                .font(.title3)
-                .fontWeight(.bold)
-                .foregroundColor(.primary)
-                .frame(height: 22) // Match the height of dual values in DualStatCard
-            
-            // Mini graph - use more height
-            MiniGraph(data: data, color: color)
-                .frame(height: 50)
-        }
-        .padding(10)
-        .background(Color(NSColor.controlBackgroundColor).opacity(0.5))
-        .clipShape(RoundedRectangle(cornerRadius: 8))
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-}
-
-struct DualStatCard: View {
-    let title: String
-    let positiveValue: String
-    let negativeValue: String
-    let positiveData: [Double]
-    let negativeData: [Double]
-    let positiveColor: Color
-    let negativeColor: Color
-    let icon: String
-    
-    var body: some View {
-        VStack(spacing: 6) {
-            // Header
-            HStack(spacing: 4) {
-                Image(systemName: icon)
-                    .foregroundColor(positiveColor)
-                    .font(.caption2)
-                
-                Text(title)
-                    .font(.caption2)
-                    .fontWeight(.medium)
-                    .foregroundColor(.secondary)
-                
-                Spacer()
+            // Values section - adapts based on graph type
+            Group {
+                if let singleData = graphData as? SingleGraphData {
+                    Text(singleData.value)
+                        .font(.title3)
+                        .fontWeight(.bold)
+                        .foregroundColor(.primary)
+                } else if let dualData = graphData as? DualGraphData {
+                    HStack(spacing: 6) {
+                        Text(dualData.positiveValue)
+                            .font(.caption)
+                            .fontWeight(.semibold)
+                            .foregroundColor(dualData.positiveColor)
+                        
+                        Text("•")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                        
+                        Text(dualData.negativeValue)
+                            .font(.caption)
+                            .fontWeight(.semibold)
+                            .foregroundColor(dualData.negativeColor)
+                    }
+                }
             }
+            .frame(height: 22) // Fixed height for consistent card sizing
             
-            // Dual values - horizontal layout to match single value height
-            HStack(spacing: 8) {
-                Text(positiveValue)
-                    .font(.caption)
-                    .fontWeight(.semibold)
-                    .foregroundColor(positiveColor)
-                
-                Text("•")
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
-                
-                Text(negativeValue)
-                    .font(.caption)
-                    .fontWeight(.semibold)
-                    .foregroundColor(negativeColor)
+            // Graph section - adapts based on graph type
+            Group {
+                if let singleData = graphData as? SingleGraphData {
+                    MiniGraph(data: singleData.data, color: singleData.color)
+                } else if let dualData = graphData as? DualGraphData {
+                    DualQuadrantGraph(
+                        positiveData: dualData.positiveData,
+                        negativeData: dualData.negativeData,
+                        positiveColor: dualData.positiveColor,
+                        negativeColor: dualData.negativeColor
+                    )
+                }
             }
-            .frame(height: 22) // Match the height of .title3 text in StatCard
-            
-            // Dual quadrant graph
-            DualQuadrantGraph(
-                positiveData: positiveData,
-                negativeData: negativeData,
-                positiveColor: positiveColor,
-                negativeColor: negativeColor
-            )
-            .frame(height: 50)
+            .frame(height: 50) // Fixed height for consistent card sizing
         }
         .padding(10)
         .background(Color(NSColor.controlBackgroundColor).opacity(0.5))

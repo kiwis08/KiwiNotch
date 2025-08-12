@@ -373,6 +373,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         KeyboardShortcuts.onKeyDown(for: .toggleSneakPeek) { [weak self] in
             guard let self = self else { return }
+            
+            // Only execute if shortcuts are enabled
+            guard Defaults[.enableShortcuts] else { return }
+            
             self.coordinator.toggleSneakPeek(
                 status: !self.coordinator.sneakPeek.show,
                 type: .music,
@@ -382,6 +386,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         KeyboardShortcuts.onKeyDown(for: .toggleNotchOpen) { [weak self] in
             guard let self = self else { return }
+            
+            // Only execute if shortcuts are enabled
+            guard Defaults[.enableShortcuts] else { return }
             
             let mouseLocation = NSEvent.mouseLocation
             
@@ -418,12 +425,22 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         KeyboardShortcuts.onKeyDown(for: .startDemoTimer) { [weak self] in
             guard let self = self else { return }
+            
+            // Only execute if shortcuts are enabled
+            guard Defaults[.enableShortcuts] else { return }
+            
+            // Only start timer if the timer feature is enabled
+            guard Defaults[.enableTimerFeature] else { return }
+            
             // Start a 5-minute demo timer
             TimerManager.shared.startDemoTimer(duration: 300)
         }
         
         KeyboardShortcuts.onKeyDown(for: .clipboardHistoryPanel) { [weak self] in
             guard let self = self else { return }
+            
+            // Only execute if shortcuts are enabled
+            guard Defaults[.enableShortcuts] else { return }
             
             // Only open clipboard if the feature is enabled
             guard Defaults[.enableClipboardManager] else { return }

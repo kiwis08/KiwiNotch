@@ -203,6 +203,8 @@ struct ContentView: View {
                 }
         }
         .frame(maxWidth: dynamicNotchSize.width, maxHeight: dynamicNotchSize.height, alignment: .top)
+        .animation(.easeInOut(duration: 0.4), value: dynamicNotchSize)
+        .animation(.easeInOut(duration: 0.4), value: coordinator.currentView)
         .shadow(color: ((vm.notchState == .open || isHovering) && Defaults[.enableShadow]) ? .black.opacity(0.6) : .clear, radius: Defaults[.cornerRadiusScaling] ? 10 : 5)
         .background(dragDetector)
         .environmentObject(vm)
@@ -309,18 +311,26 @@ struct ContentView: View {
               
               ZStack {
                   if vm.notchState == .open {
-                      switch coordinator.currentView {
-                          case .home:
-                              NotchHomeView(albumArtNamespace: albumArtNamespace)
-                          case .shelf:
-                              NotchShelfView()
-                          case .timer:
-                              NotchTimerView()
-                          case .stats:
-                              NotchStatsView()
+                      Group {
+                          switch coordinator.currentView {
+                              case .home:
+                                  NotchHomeView(albumArtNamespace: albumArtNamespace)
+                              case .shelf:
+                                  NotchShelfView()
+                              case .timer:
+                                  NotchTimerView()
+                              case .stats:
+                                  NotchStatsView()
+                          }
                       }
+                      .transition(.asymmetric(
+                          insertion: .scale(scale: 0.8).combined(with: .opacity).animation(.easeInOut(duration: 0.4)),
+                          removal: .scale(scale: 0.8).combined(with: .opacity).animation(.easeInOut(duration: 0.4))
+                      ))
+                      .id(coordinator.currentView) // Force SwiftUI to treat each view as unique
                   }
               }
+              .animation(.easeInOut(duration: 0.4), value: coordinator.currentView)
               .zIndex(1)
               .allowsHitTesting(vm.notchState == .open)
               .blur(radius: abs(gestureProgress) > 0.3 ? min(abs(gestureProgress), 8) : 0)
