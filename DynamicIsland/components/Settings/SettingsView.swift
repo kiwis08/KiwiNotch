@@ -1112,30 +1112,106 @@ struct Appearance: View {
 }
 
 struct Shortcuts: View {
+    @Default(.enableTimerFeature) var enableTimerFeature
+    @Default(.enableClipboardManager) var enableClipboardManager
+    @Default(.enableShortcuts) var enableShortcuts
+    
     var body: some View {
         Form {
             Section {
-                KeyboardShortcuts.Recorder("Toggle Sneak Peek:", name: .toggleSneakPeek)
+                Defaults.Toggle("Enable global keyboard shortcuts", key: .enableShortcuts)
             } header: {
-                Text("Media")
+                Text("General")
             } footer: {
-                Text("Sneak Peek shows the media title and artist under the notch for a few seconds.")
+                Text("When disabled, all keyboard shortcuts will be inactive. You can still use the UI controls.")
                     .multilineTextAlignment(.trailing)
                     .foregroundStyle(.secondary)
                     .font(.caption)
             }
-            Section {
-                KeyboardShortcuts.Recorder("Toggle Notch Open:", name: .toggleNotchOpen)
-            }
-            Section {
-                KeyboardShortcuts.Recorder("Start Demo Timer:", name: .startDemoTimer)
-            } header: {
-                Text("Timer")
-            } footer: {
-                Text("Starts a 5-minute demo timer to test the timer live activity feature.")
-                    .multilineTextAlignment(.trailing)
-                    .foregroundStyle(.secondary)
-                    .font(.caption)
+            
+            if enableShortcuts {
+                Section {
+                    KeyboardShortcuts.Recorder("Toggle Sneak Peek:", name: .toggleSneakPeek)
+                        .disabled(!enableShortcuts)
+                } header: {
+                    Text("Media")
+                } footer: {
+                    Text("Sneak Peek shows the media title and artist under the notch for a few seconds.")
+                        .multilineTextAlignment(.trailing)
+                        .foregroundStyle(.secondary)
+                        .font(.caption)
+                }
+                
+                Section {
+                    KeyboardShortcuts.Recorder("Toggle Notch Open:", name: .toggleNotchOpen)
+                        .disabled(!enableShortcuts)
+                } header: {
+                    Text("Navigation")
+                } footer: {
+                    Text("Toggle the Dynamic Island open or closed from anywhere.")
+                        .multilineTextAlignment(.trailing)
+                        .foregroundStyle(.secondary)
+                        .font(.caption)
+                }
+                
+                Section {
+                    HStack {
+                        VStack(alignment: .leading) {
+                            KeyboardShortcuts.Recorder("Start Demo Timer:", name: .startDemoTimer)
+                                .disabled(!enableShortcuts || !enableTimerFeature)
+                            if !enableTimerFeature {
+                                Text("Timer feature is disabled")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                    .padding(.top, 2)
+                            }
+                        }
+                        Spacer()
+                    }
+                } header: {
+                    Text("Timer")
+                } footer: {
+                    Text("Starts a 5-minute demo timer to test the timer live activity feature. Only works when timer feature is enabled.")
+                        .multilineTextAlignment(.trailing)
+                        .foregroundStyle(.secondary)
+                        .font(.caption)
+                }
+                
+                Section {
+                    HStack {
+                        VStack(alignment: .leading) {
+                            KeyboardShortcuts.Recorder("Clipboard History:", name: .clipboardHistoryPanel)
+                                .disabled(!enableShortcuts || !enableClipboardManager)
+                            if !enableClipboardManager {
+                                Text("Clipboard feature is disabled")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                    .padding(.top, 2)
+                            }
+                        }
+                        Spacer()
+                    }
+                } header: {
+                    Text("Clipboard")
+                } footer: {
+                    Text("Opens the clipboard history panel. Default is Cmd+Shift+V (similar to Windows+V on PC). Only works when clipboard feature is enabled.")
+                        .multilineTextAlignment(.trailing)
+                        .foregroundStyle(.secondary)
+                        .font(.caption)
+                }
+            } else {
+                Section {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Keyboard shortcuts are disabled")
+                            .font(.headline)
+                            .foregroundStyle(.secondary)
+                        
+                        Text("Enable global keyboard shortcuts above to customize your shortcuts.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(.vertical, 8)
+                }
             }
         }
         .navigationTitle("Shortcuts")

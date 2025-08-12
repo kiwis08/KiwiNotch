@@ -278,7 +278,13 @@
     "Clipboard" : {
 
     },
+    "Clipboard feature is disabled" : {
+
+    },
     "Clipboard History" : {
+
+    },
+    "Clipboard History:" : {
 
     },
     "Clipboard Manager" : {
@@ -445,6 +451,9 @@
         }
       }
     },
+    "Enable global keyboard shortcuts above to customize your shortcuts." : {
+
+    },
     "Enable graph visibility in Settings → Stats to view performance data." : {
 
     },
@@ -593,6 +602,9 @@
     "Installed extensions" : {
 
     },
+    "Keyboard shortcuts are disabled" : {
+
+    },
     "Last Updated" : {
 
     },
@@ -728,6 +740,9 @@
     "Name" : {
 
     },
+    "Navigation" : {
+
+    },
     "Need Restart" : {
 
     },
@@ -817,6 +832,9 @@
       }
     },
     "Open System Settings" : {
+
+    },
+    "Opens the clipboard history panel. Default is Cmd+Shift+V (similar to Windows+V on PC). Only works when clipboard feature is enabled." : {
 
     },
     "Pause" : {
@@ -1035,7 +1053,7 @@
     "Start Monitoring" : {
 
     },
-    "Starts a 5-minute demo timer to test the timer live activity feature." : {
+    "Starts a 5-minute demo timer to test the timer live activity feature. Only works when timer feature is enabled." : {
 
     },
     "Stats" : {
@@ -1087,6 +1105,9 @@
     "Timer Feature" : {
 
     },
+    "Timer feature is disabled" : {
+
+    },
     "Timer Sound" : {
 
     },
@@ -1094,6 +1115,9 @@
 
     },
     "Toggle Sneak Peek:" : {
+
+    },
+    "Toggle the Dynamic Island open or closed from anywhere." : {
 
     },
     "Transform your notch truly yours" : {
@@ -1147,6 +1171,9 @@
 
     },
     "What's New" : {
+
+    },
+    "When disabled, all keyboard shortcuts will be inactive. You can still use the UI controls." : {
 
     },
     "When enabled, the Stats tab will display real-time system performance graphs. This feature requires system permissions and may use additional battery." : {
