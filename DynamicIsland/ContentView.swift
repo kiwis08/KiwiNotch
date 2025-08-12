@@ -124,7 +124,7 @@ struct ContentView: View {
                             }
                             
                             // Only close if mouse leaves and the notch is open and no popovers are active
-                            if !hovering && vm.notchState == .open && !vm.isBatteryPopoverActive && !vm.isClipboardPopoverActive {
+                            if !hovering && vm.notchState == .open && !vm.isBatteryPopoverActive {
                                 vm.close()
                             }
                         }
@@ -173,13 +173,6 @@ struct ContentView: View {
                 .onChange(of: vm.isBatteryPopoverActive) { _, newPopoverState in
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                         if !newPopoverState && !isHovering && vm.notchState == .open {
-                            vm.close()
-                        }
-                    }
-                }
-                .onChange(of: vm.isClipboardPopoverActive) { _, newPopoverState in
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                        if !newPopoverState && !isHovering && vm.notchState == .open && !vm.isBatteryPopoverActive {
                             vm.close()
                         }
                     }
@@ -524,7 +517,7 @@ struct ContentView: View {
                 }
                 
                 // Close the notch if it's open and no popovers are active
-                if vm.notchState == .open && !vm.isBatteryPopoverActive && !vm.isClipboardPopoverActive {
+                if vm.notchState == .open && !vm.isBatteryPopoverActive {
                     vm.close()
                 }
             }

@@ -392,9 +392,6 @@
     "Disk Write" : {
 
     },
-    "Display Mode" : {
-
-    },
     "Download" : {
 
     },
@@ -872,6 +869,9 @@
       }
     },
     "Pin items from history to save them here" : {
+
+    },
+    "Pin items to add them to favorites" : {
 
     },
     "Pinned Items" : {

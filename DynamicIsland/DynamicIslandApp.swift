@@ -450,42 +450,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 ClipboardManager.shared.startMonitoring()
             }
             
-            // Determine display mode based on user preference and context
-            let shouldUseWindow = self.shouldUseWindowMode()
-            
-            if shouldUseWindow {
-                // Use window interface
-                ClipboardWindowManager.shared.toggleClipboardWindow()
-            } else {
-                // Use traditional popover interface
-                // Find the appropriate view model based on mouse location
-                let mouseLocation = NSEvent.mouseLocation
-                var viewModel = self.vm
-                
-                if Defaults[.showOnAllDisplays] {
-                    for screen in NSScreen.screens {
-                        if screen.frame.contains(mouseLocation) {
-                            if let screenViewModel = self.viewModels[screen] {
-                                viewModel = screenViewModel
-                                break
-                            }
-                        }
-                    }
-                }
-                
-                // Open the notch if it's closed
-                if viewModel.notchState == .closed {
-                    viewModel.open()
-                    
-                    // Wait a bit for the notch to open before toggling clipboard
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                        self.coordinator.toggleClipboardPopover()
-                    }
-                } else {
-                    // If notch is already open, toggle immediately
-                    self.coordinator.toggleClipboardPopover()
-                }
-            }
+            // Always use panel mode
+            ClipboardPanelManager.shared.toggleClipboardPanel()
         }
         
         if !Defaults[.showOnAllDisplays] {
@@ -625,58 +591,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     
-    // MARK: - Clipboard Display Mode Logic
-    
-    private func shouldUseWindowMode() -> Bool {
-        let displayMode = Defaults[.clipboardDisplayMode]
-        
-        switch displayMode {
-        case .window:
-            return true
-        case .popover:
-            return false
-        case .auto:
-            // Auto mode: use window if any app is in fullscreen, otherwise use popover
-            return isAnyAppInFullscreen()
-        }
-    }
-    
-    private func isAnyAppInFullscreen() -> Bool {
-        // Check if any running application is in fullscreen mode
-        let workspace = NSWorkspace.shared
-        
-        // Get all visible applications
-        let apps = workspace.runningApplications.filter { app in
-            app.activationPolicy == .regular && !app.isTerminated
-        }
-        
-        // Check each application's windows for fullscreen state
-        for app in apps {
-            if app.isActive {
-                // Check if the frontmost application has fullscreen windows
-                let windows = CGWindowListCopyWindowInfo(.optionOnScreenOnly, kCGNullWindowID) as? [[String: Any]] ?? []
-                
-                for window in windows {
-                    if let ownerPID = window[kCGWindowOwnerPID as String] as? Int32,
-                       ownerPID == app.processIdentifier,
-                       let bounds = window[kCGWindowBounds as String] as? [String: Any],
-                       let width = bounds["Width"] as? CGFloat,
-                       let height = bounds["Height"] as? CGFloat {
-                        
-                        // Check if window dimensions match screen dimensions (indicating fullscreen)
-                        for screen in NSScreen.screens {
-                            let screenFrame = screen.frame
-                            if abs(width - screenFrame.width) < 10 && abs(height - screenFrame.height) < 10 {
-                                return true
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        
-        return false
-    }
     
     private func showOnboardingWindow() {
         if onboardingWindowController == nil {

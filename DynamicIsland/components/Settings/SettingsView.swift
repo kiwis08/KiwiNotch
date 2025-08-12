@@ -1589,7 +1589,6 @@ struct ClipboardSettings: View {
     @Default(.enableClipboardManager) var enableClipboardManager
     @Default(.clipboardHistorySize) var clipboardHistorySize
     @Default(.showClipboardIcon) var showClipboardIcon
-    @Default(.clipboardDisplayMode) var clipboardDisplayMode
     
     var body: some View {
         Form {
@@ -1611,25 +1610,6 @@ struct ClipboardSettings: View {
             if enableClipboardManager {
                 Section {
                     Defaults.Toggle("Show Clipboard Icon", key: .showClipboardIcon)
-                    
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack {
-                            Text("Display Mode")
-                            Spacer()
-                            Picker("Display Mode", selection: $clipboardDisplayMode) {
-                                ForEach(ClipboardDisplayMode.allCases, id: \.self) { mode in
-                                    Text(mode.displayName).tag(mode)
-                                }
-                            }
-                            .pickerStyle(.menu)
-                            .frame(width: 140)
-                        }
-                        
-                        Text(clipboardDisplayMode.description)
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                            .padding(.leading, 0)
-                    }
                     
                     HStack {
                         Text("History Size")
