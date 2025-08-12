@@ -15,7 +15,6 @@ struct DynamicIslandHeader: View {
     @ObservedObject var coordinator = DynamicIslandViewCoordinator.shared
     @ObservedObject var clipboardManager = ClipboardManager.shared
     @StateObject var tvm = TrayDrop.shared
-    @State private var showClipboardPopover = false
     
     var body: some View {
         HStack(spacing: 0) {
@@ -63,7 +62,8 @@ struct DynamicIslandHeader: View {
                     
                     if Defaults[.enableClipboardManager] && Defaults[.showClipboardIcon] {
                         Button(action: {
-                            showClipboardPopover.toggle()
+                            // Always use panel mode
+                            ClipboardPanelManager.shared.toggleClipboardPanel()
                         }) {
                             Capsule()
                                 .fill(.black)
@@ -76,18 +76,6 @@ struct DynamicIslandHeader: View {
                                 }
                         }
                         .buttonStyle(PlainButtonStyle())
-                        .popover(isPresented: $showClipboardPopover, arrowEdge: .bottom) {
-                            ClipboardHistoryPopover(isPresented: $showClipboardPopover)
-                                .onAppear {
-                                    vm.isClipboardPopoverActive = true
-                                }
-                                .onDisappear {
-                                    vm.isClipboardPopoverActive = false
-                                }
-                        }
-                        .onChange(of: showClipboardPopover) { isOpen in
-                            vm.isClipboardPopoverActive = isOpen
-                        }
                         .onAppear {
                             if Defaults[.enableClipboardManager] && !clipboardManager.isMonitoring {
                                 clipboardManager.startMonitoring()
@@ -137,7 +125,7 @@ struct DynamicIslandHeader: View {
         .onChange(of: coordinator.shouldToggleClipboardPopover) { _ in
             // Only toggle if clipboard is enabled
             if Defaults[.enableClipboardManager] {
-                showClipboardPopover.toggle()
+                ClipboardPanelManager.shared.toggleClipboardPanel()
             }
         }
     }

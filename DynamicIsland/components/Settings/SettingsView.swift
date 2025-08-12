@@ -1632,6 +1632,13 @@ struct ClipboardSettings: View {
                     }
                     
                     HStack {
+                        Text("Pinned Items")
+                        Spacer()
+                        Text("\(clipboardManager.pinnedItems.count)")
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    HStack {
                         Text("Monitoring Status")
                         Spacer()
                         Text(clipboardManager.isMonitoring ? "Active" : "Stopped")
@@ -1640,7 +1647,7 @@ struct ClipboardSettings: View {
                 } header: {
                     Text("Settings")
                 } footer: {
-                    Text("The clipboard icon appears in the header next to the settings gear when enabled. Use the global shortcut Cmd+Shift+V or click the icon to access history.")
+                    Text("Auto mode intelligently chooses between popover (desktop) and window (fullscreen apps) for the best experience. You can override this with manual selection.")
                 }
                 
                 Section {
@@ -1649,10 +1656,17 @@ struct ClipboardSettings: View {
                     }
                     .foregroundColor(.red)
                     .disabled(clipboardManager.clipboardHistory.isEmpty)
+                    
+                    Button("Clear Pinned Items") {
+                        clipboardManager.pinnedItems.removeAll()
+                        clipboardManager.savePinnedItemsToDefaults()
+                    }
+                    .foregroundColor(.red)
+                    .disabled(clipboardManager.pinnedItems.isEmpty)
                 } header: {
                     Text("Actions")
                 } footer: {
-                    Text("This will permanently delete all stored clipboard history. The clipboard button is located to the left of the settings gear in the header.")
+                    Text("Clear clipboard history removes recent copies. Clear pinned items removes your favorites. Both actions are permanent.")
                 }
                 
                 if !clipboardManager.clipboardHistory.isEmpty {

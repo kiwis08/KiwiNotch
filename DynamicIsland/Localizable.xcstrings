@@ -137,6 +137,9 @@
     "Appearance" : {
 
     },
+    "Auto mode intelligently chooses between popover (desktop) and window (fullscreen apps) for the best experience. You can override this with manual selection." : {
+
+    },
     "Automatically check for updates" : {
       "localizations" : {
         "en" : {
@@ -272,7 +275,13 @@
     "Clear Clipboard History" : {
 
     },
+    "Clear clipboard history removes recent copies. Clear pinned items removes your favorites. Both actions are permanent." : {
+
+    },
     "Clear Data" : {
+
+    },
+    "Clear Pinned Items" : {
 
     },
     "Clipboard" : {
@@ -784,7 +793,13 @@
     "No extension installed" : {
 
     },
+    "No favorites" : {
+
+    },
     "No Graphs Enabled" : {
+
+    },
+    "No results found" : {
 
     },
     "Non-notch display height" : {
@@ -853,6 +868,15 @@
         }
       }
     },
+    "Pin items from history to save them here" : {
+
+    },
+    "Pin items to add them to favorites" : {
+
+    },
+    "Pinned Items" : {
+
+    },
     "Plugged In" : {
 
     },
@@ -919,6 +943,9 @@
 
     },
     "Running" : {
+
+    },
+    "Search clipboard..." : {
 
     },
     "seconds" : {
@@ -1084,13 +1111,7 @@
     "System features" : {
 
     },
-    "The clipboard icon appears in the header next to the settings gear when enabled. Use the global shortcut Cmd+Shift+V or click the icon to access history." : {
-
-    },
     "TheDynamicIsland" : {
-
-    },
-    "This will permanently delete all stored clipboard history. The clipboard button is located to the left of the settings gear in the header." : {
 
     },
     "Time to Full Charge: %lld min" : {
@@ -1121,6 +1142,9 @@
 
     },
     "Transform your notch truly yours" : {
+
+    },
+    "Try adjusting your search terms" : {
 
     },
     "Two-finger swipe up on notch to close, two-finger swipe down on notch to open when **Open notch on hover** option is disabled" : {
