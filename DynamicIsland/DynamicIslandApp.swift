@@ -454,6 +454,24 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             ClipboardPanelManager.shared.toggleClipboardPanel()
         }
         
+        KeyboardShortcuts.onKeyDown(for: .statsPanel) { [weak self] in
+            guard let self = self else { return }
+            
+            // Only execute if shortcuts are enabled
+            guard Defaults[.enableShortcuts] else { return }
+            
+            // Only open stats panel if both stats feature and panel are enabled
+            guard Defaults[.enableStatsFeature] && Defaults[.showStatsPanel] else { return }
+            
+            // Start stats monitoring if not already running
+            if !StatsManager.shared.isMonitoring {
+                StatsManager.shared.startMonitoring()
+            }
+            
+            // Toggle stats panel
+            StatsPanelManager.shared.toggleStatsPanel()
+        }
+        
         if !Defaults[.showOnAllDisplays] {
             let viewModel = self.vm
             let window = createDynamicIslandWindow(

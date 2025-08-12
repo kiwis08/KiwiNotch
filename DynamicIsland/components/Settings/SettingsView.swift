@@ -1115,6 +1115,7 @@ struct Shortcuts: View {
     @Default(.enableTimerFeature) var enableTimerFeature
     @Default(.enableClipboardManager) var enableClipboardManager
     @Default(.enableShortcuts) var enableShortcuts
+    @Default(.enableStatsFeature) var enableStatsFeature
     
     var body: some View {
         Form {
@@ -1195,6 +1196,34 @@ struct Shortcuts: View {
                     Text("Clipboard")
                 } footer: {
                     Text("Opens the clipboard history panel. Default is Cmd+Shift+V (similar to Windows+V on PC). Only works when clipboard feature is enabled.")
+                        .multilineTextAlignment(.trailing)
+                        .foregroundStyle(.secondary)
+                        .font(.caption)
+                }
+                
+                Section {
+                    HStack {
+                        VStack(alignment: .leading) {
+                            KeyboardShortcuts.Recorder("Stats Panel:", name: .statsPanel)
+                                .disabled(!enableShortcuts || !enableStatsFeature || !Defaults[.showStatsPanel])
+                            if !enableStatsFeature {
+                                Text("Stats feature is disabled")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                    .padding(.top, 2)
+                            } else if !Defaults[.showStatsPanel] {
+                                Text("Stats panel is disabled")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                    .padding(.top, 2)
+                            }
+                        }
+                        Spacer()
+                    }
+                } header: {
+                    Text("Stats")
+                } footer: {
+                    Text("Opens the detailed system performance monitor panel. Default is Cmd+Shift+S. Only works when stats feature is enabled.")
                         .multilineTextAlignment(.trailing)
                         .foregroundStyle(.secondary)
                         .font(.caption)
@@ -1423,6 +1452,7 @@ struct StatsSettings: View {
     @Default(.showGpuGraph) var showGpuGraph
     @Default(.showNetworkGraph) var showNetworkGraph
     @Default(.showDiskGraph) var showDiskGraph
+    @Default(.showStatsPanel) var showStatsPanel
     
     var enabledGraphsCount: Int {
         [showCpuGraph, showMemoryGraph, showGpuGraph, showNetworkGraph, showDiskGraph].filter { $0 }.count
@@ -1439,13 +1469,24 @@ struct StatsSettings: View {
                             statsManager.stopMonitoring()
                         }
                     }
+                
+                if enableStatsFeature {
+                    Defaults.Toggle("Enable detailed stats panel", key: .showStatsPanel)
+                }
             } header: {
                 Text("General")
             } footer: {
-                Text("When enabled, the Stats tab will display real-time system performance graphs. This feature requires system permissions and may use additional battery.")
-                    .multilineTextAlignment(.trailing)
-                    .foregroundStyle(.secondary)
-                    .font(.caption)
+                if enableStatsFeature && showStatsPanel {
+                    Text("Stats monitoring displays performance graphs in the Dynamic Island. The detailed panel (Cmd+Shift+S) shows Activity Monitor-style detailed graphs and metrics.")
+                        .multilineTextAlignment(.trailing)
+                        .foregroundStyle(.secondary)
+                        .font(.caption)
+                } else {
+                    Text("When enabled, the Stats tab will display real-time system performance graphs. This feature requires system permissions and may use additional battery.")
+                        .multilineTextAlignment(.trailing)
+                        .foregroundStyle(.secondary)
+                        .font(.caption)
+                }
             }
             
             if enableStatsFeature {
