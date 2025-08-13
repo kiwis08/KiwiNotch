@@ -47,7 +47,7 @@ struct ProOnboard: View {
                             .padding(.bottom, 30)
                     }
                     Button {
-                        if let url = URL(string: "https://buymeacoffee.com/jfxh67wvfxq") {
+                        if let url = URL(string: "https://www.linkedin.com/in/hariharan-mudaliar/") {
                             NSWorkspace.shared.open(url)
                         }
                     } label: {
