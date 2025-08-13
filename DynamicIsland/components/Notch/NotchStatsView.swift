@@ -90,8 +90,8 @@ struct NotchStatsView: View {
         if showNetworkGraph {
             graphs.append(DualGraphData(
                 title: "Network",
-                positiveValue: String(format: "↓%.1f MB/s", statsManager.networkDownload),
-                negativeValue: String(format: "↑%.1f MB/s", statsManager.networkUpload),
+                positiveValue: "↓" + statsManager.networkDownloadString,
+                negativeValue: "↑" + statsManager.networkUploadString,
                 positiveData: statsManager.networkDownloadHistory,
                 negativeData: statsManager.networkUploadHistory,
                 positiveColor: .orange,
@@ -104,8 +104,8 @@ struct NotchStatsView: View {
         if showDiskGraph {
             graphs.append(DualGraphData(
                 title: "Disk",
-                positiveValue: String(format: "R %.1f MB/s", statsManager.diskRead),
-                negativeValue: String(format: "W %.1f MB/s", statsManager.diskWrite),
+                positiveValue: "R " + statsManager.diskReadString,
+                negativeValue: "W " + statsManager.diskWriteString,
                 positiveData: statsManager.diskReadHistory,
                 negativeData: statsManager.diskWriteHistory,
                 positiveColor: .cyan,

@@ -125,7 +125,7 @@ struct StatsPanelView: View {
                 .padding(16)
             }
         }
-        .frame(width: 600, height: 500)
+        .frame(width: 650, height: 300)
         .background(VisualEffectView(material: .hudWindow, blendingMode: .behindWindow))
         .cornerRadius(12)
         .shadow(color: .black.opacity(0.4), radius: 20, x: 0, y: 10)
