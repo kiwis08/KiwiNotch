@@ -64,7 +64,7 @@ class StatsPanel: NSPanel {
         self.contentView = hostingView
         
         // Set initial size
-        let preferredSize = CGSize(width: 600, height: 500)
+        let preferredSize = CGSize(width: 600, height: 400)
         hostingView.setFrameSize(preferredSize)
         setContentSize(preferredSize)
     }

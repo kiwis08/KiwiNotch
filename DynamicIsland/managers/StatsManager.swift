@@ -75,6 +75,15 @@ class StatsManager: ObservableObject {
     func startMonitoring() {
         guard !isMonitoring else { return }
         
+        // Reset baseline for accurate measurement
+        let initialStats = getNetworkStats()
+        previousNetworkStats = initialStats
+        
+        let initialDiskStats = getDiskStats()
+        previousDiskStats = initialDiskStats
+        
+        previousTimestamp = Date()
+        
         isMonitoring = true
         lastUpdated = Date()
         
@@ -108,19 +117,35 @@ class StatsManager: ObservableObject {
         let currentTime = Date()
         let timeInterval = currentTime.timeIntervalSince(previousTimestamp)
         
-        let bytesDownloaded = currentNetworkStats.bytesIn - previousNetworkStats.bytesIn
-        let bytesUploaded = currentNetworkStats.bytesOut - previousNetworkStats.bytesOut
+        var downloadSpeed: Double = 0.0
+        var uploadSpeed: Double = 0.0
         
-        let downloadSpeed = timeInterval > 0 ? Double(bytesDownloaded) / timeInterval / 1_048_576 : 0.0 // Convert to MB/s
-        let uploadSpeed = timeInterval > 0 ? Double(bytesUploaded) / timeInterval / 1_048_576 : 0.0 // Convert to MB/s
+        // Only calculate speeds if we have a reasonable time interval and previous data
+        if timeInterval > 0.1 && previousNetworkStats.bytesIn > 0 && previousNetworkStats.bytesOut > 0 {
+            let bytesDownloaded = currentNetworkStats.bytesIn > previousNetworkStats.bytesIn ? 
+                                currentNetworkStats.bytesIn - previousNetworkStats.bytesIn : 0
+            let bytesUploaded = currentNetworkStats.bytesOut > previousNetworkStats.bytesOut ? 
+                               currentNetworkStats.bytesOut - previousNetworkStats.bytesOut : 0
+            
+            downloadSpeed = Double(bytesDownloaded) / timeInterval / 1_048_576 // Convert to MB/s
+            uploadSpeed = Double(bytesUploaded) / timeInterval / 1_048_576 // Convert to MB/s
+        }
         
         // Calculate disk speeds
         let currentDiskStats = getDiskStats()
-        let bytesRead = currentDiskStats.bytesRead - previousDiskStats.bytesRead
-        let bytesWritten = currentDiskStats.bytesWritten - previousDiskStats.bytesWritten
+        var readSpeed: Double = 0.0
+        var writeSpeed: Double = 0.0
         
-        let readSpeed = timeInterval > 0 ? Double(bytesRead) / timeInterval / 1_048_576 : 0.0 // Convert to MB/s
-        let writeSpeed = timeInterval > 0 ? Double(bytesWritten) / timeInterval / 1_048_576 : 0.0 // Convert to MB/s
+        // Only calculate speeds if we have a reasonable time interval and previous data
+        if timeInterval > 0.1 && previousDiskStats.bytesRead > 0 && previousDiskStats.bytesWritten > 0 {
+            let bytesRead = currentDiskStats.bytesRead > previousDiskStats.bytesRead ? 
+                           currentDiskStats.bytesRead - previousDiskStats.bytesRead : 0
+            let bytesWritten = currentDiskStats.bytesWritten > previousDiskStats.bytesWritten ? 
+                              currentDiskStats.bytesWritten - previousDiskStats.bytesWritten : 0
+            
+            readSpeed = Double(bytesRead) / timeInterval / 1_048_576 // Convert to MB/s
+            writeSpeed = Double(bytesWritten) / timeInterval / 1_048_576 // Convert to MB/s
+        }
         
         // Update current values
         cpuUsage = newCpuUsage
@@ -136,8 +161,8 @@ class StatsManager: ObservableObject {
         updateHistory(value: newCpuUsage, history: &cpuHistory)
         updateHistory(value: newMemoryUsage, history: &memoryHistory)
         updateHistory(value: newGpuUsage, history: &gpuHistory)
-        updateHistory(value: networkDownload, history: &networkDownloadHistory)
-        updateHistory(value: networkUpload, history: &networkUploadHistory)
+        updateHistory(value: downloadSpeed, history: &networkDownloadHistory)
+        updateHistory(value: uploadSpeed, history: &networkUploadHistory)
         updateHistory(value: readSpeed, history: &diskReadHistory)
         updateHistory(value: writeSpeed, history: &diskWriteHistory)
         
@@ -243,14 +268,22 @@ class StatsManager: ObservableObject {
             }
             
             let name = String(cString: interface.ifa_name)
-            // Skip loopback and non-active interfaces
-            guard !name.hasPrefix("lo") && !name.hasPrefix("gif") && !name.hasPrefix("stf") else {
+            // Skip loopback and virtual interfaces, but include en0, en1, etc. and Wi-Fi interfaces
+            guard !name.hasPrefix("lo") && 
+                  !name.hasPrefix("gif") && 
+                  !name.hasPrefix("stf") && 
+                  !name.hasPrefix("bridge") &&
+                  !name.hasPrefix("utun") &&
+                  !name.hasPrefix("awdl") else {
                 continue
             }
             
-            if let data = interface.ifa_data?.assumingMemoryBound(to: if_data.self) {
-                totalBytesIn += UInt64(data.pointee.ifi_ibytes)
-                totalBytesOut += UInt64(data.pointee.ifi_obytes)
+            // Only count active interfaces (en0, en1, etc.)
+            if name.hasPrefix("en") || name.contains("Wi-Fi") {
+                if let data = interface.ifa_data?.assumingMemoryBound(to: if_data.self) {
+                    totalBytesIn += UInt64(data.pointee.ifi_ibytes)
+                    totalBytesOut += UInt64(data.pointee.ifi_obytes)
+                }
             }
         }
         
