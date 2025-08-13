@@ -50,6 +50,9 @@
     "• New feature 1" : {
 
     },
+    "• Updated %@" : {
+
+    },
     "3 items" : {
 
     },
@@ -492,6 +495,9 @@
     "Enable stats monitoring in Settings to view system performance data." : {
 
     },
+    "Enable system stats monitoring in Settings to view detailed performance data." : {
+
+    },
     "Enable timer feature in Settings to use this tab" : {
 
     },
@@ -626,6 +632,9 @@
     "Live" : {
 
     },
+    "Live Monitoring" : {
+
+    },
     "Live Performance Data" : {
 
     },
@@ -737,6 +746,9 @@
     "Monitoring Status" : {
 
     },
+    "Monitoring Stopped" : {
+
+    },
     "More" : {
 
     },
@@ -846,10 +858,16 @@
         }
       }
     },
+    "Open Settings" : {
+
+    },
     "Open System Settings" : {
 
     },
     "Opens the clipboard history panel. Default is Cmd+Shift+V (similar to Windows+V on PC). Only works when clipboard feature is enabled." : {
+
+    },
+    "Opens the detailed system performance monitor panel. Default is Cmd+Shift+S. Only works when stats feature is enabled." : {
 
     },
     "Pause" : {
@@ -1089,6 +1107,21 @@
     "Stats Disabled" : {
 
     },
+    "Stats Feature Disabled" : {
+
+    },
+    "Stats feature is disabled" : {
+
+    },
+    "Stats monitoring displays performance graphs in the Dynamic Island. The detailed panel (Cmd+Shift+S) shows Activity Monitor-style detailed graphs and metrics." : {
+
+    },
+    "Stats panel is disabled" : {
+
+    },
+    "Stats Panel:" : {
+
+    },
     "Stop" : {
 
     },
@@ -1111,7 +1144,13 @@
     "System features" : {
 
     },
+    "System Performance Monitor" : {
+
+    },
     "TheDynamicIsland" : {
+
+    },
+    "Time Range" : {
 
     },
     "Time to Full Charge: %lld min" : {
