@@ -31,17 +31,20 @@ enum CalendarSelectionState: Codable, Defaults.Serializable {
 }
 
 enum ClipboardDisplayMode: String, CaseIterable, Codable, Defaults.Serializable {
-    case popover = "popover"     // Always use floating panel
+    case popover = "popover"     // Traditional popover attached to button
+    case panel = "panel"         // Floating panel near notch
     
     var displayName: String {
         switch self {
-        case .popover: return "Panel"
+        case .popover: return "Popover"
+        case .panel: return "Panel"
         }
     }
     
     var description: String {
         switch self {
-        case .popover: return "Shows clipboard in a floating panel near the notch"
+        case .popover: return "Shows clipboard as a dropdown attached to the clipboard button"
+        case .panel: return "Shows clipboard in a floating panel near the notch"
         }
     }
 }
@@ -187,7 +190,7 @@ extension Defaults.Keys {
     static let enableClipboardManager = Key<Bool>("enableClipboardManager", default: true)
     static let clipboardHistorySize = Key<Int>("clipboardHistorySize", default: 3)
     static let showClipboardIcon = Key<Bool>("showClipboardIcon", default: true)
-    static let clipboardDisplayMode = Key<ClipboardDisplayMode>("clipboardDisplayMode", default: .popover)
+    static let clipboardDisplayMode = Key<ClipboardDisplayMode>("clipboardDisplayMode", default: .panel)
     
     // MARK: Keyboard Shortcuts
     static let enableShortcuts = Key<Bool>("enableShortcuts", default: true)
