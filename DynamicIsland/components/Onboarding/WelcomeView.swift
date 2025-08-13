@@ -62,7 +62,7 @@ struct WelcomeView: View {
                 .padding(.top)
             }
             
-            Image("theboringteam")
+            Image("ebullioscopic")
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(height: 22)

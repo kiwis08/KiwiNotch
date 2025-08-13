@@ -7,7 +7,7 @@
 
 import Foundation
 
-let productPage = URL(string: "https://github.com/TheBoredTeam/DynamicIsland")!
-let sponsorPage = URL(string: "https://buymeacoffee.com/jfxh67wvfxq")!
+let productPage = URL(string: "https://github.com/Ebullioscopic/DynamicIsland")!
+let sponsorPage = URL(string: "https://www.linkedin.com/in/hariharan-mudaliar/")!
 
 
