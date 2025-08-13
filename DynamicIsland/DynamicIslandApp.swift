@@ -450,8 +450,25 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 ClipboardManager.shared.startMonitoring()
             }
             
-            // Always use panel mode
-            ClipboardPanelManager.shared.toggleClipboardPanel()
+            // Handle keyboard shortcut based on display mode
+            switch Defaults[.clipboardDisplayMode] {
+            case .panel:
+                ClipboardPanelManager.shared.toggleClipboardPanel()
+            case .popover:
+                // For popover mode, first ensure notch is open, then toggle popover
+                
+                // If notch is closed, open it first
+                if self.vm.notchState == .closed {
+                    self.vm.open()
+                    // Wait a moment for the notch to open, then show popover
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        NotificationCenter.default.post(name: NSNotification.Name("ToggleClipboardPopover"), object: nil)
+                    }
+                } else {
+                    // Notch is already open, toggle popover immediately
+                    NotificationCenter.default.post(name: NSNotification.Name("ToggleClipboardPopover"), object: nil)
+                }
+            }
         }
         
         KeyboardShortcuts.onKeyDown(for: .statsPanel) { [weak self] in

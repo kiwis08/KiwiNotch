@@ -140,9 +140,6 @@
     "Appearance" : {
 
     },
-    "Auto mode intelligently chooses between popover (desktop) and window (fullscreen apps) for the best experience. You can override this with manual selection." : {
-
-    },
     "Automatically check for updates" : {
       "localizations" : {
         "en" : {
@@ -324,6 +321,9 @@
     "Copy something to get started" : {
 
     },
+    "Copy something to start" : {
+
+    },
     "CPU Usage" : {
 
     },
@@ -393,6 +393,9 @@
 
     },
     "Disk Write" : {
+
+    },
+    "Display Mode" : {
 
     },
     "Download" : {
@@ -811,6 +814,9 @@
     "No Graphs Enabled" : {
 
     },
+    "No results" : {
+
+    },
     "No results found" : {
 
     },
@@ -870,6 +876,9 @@
     "Opens the detailed system performance monitor panel. Default is Cmd+Shift+S. Only works when stats feature is enabled." : {
 
     },
+    "Panel mode shows clipboard in a floating window near the notch. Popover mode shows clipboard as a dropdown attached to the clipboard button." : {
+
+    },
     "Pause" : {
 
     },
@@ -889,6 +898,9 @@
     "Pin items from history to save them here" : {
 
     },
+    "Pin items to add favorites" : {
+
+    },
     "Pin items to add them to favorites" : {
 
     },
@@ -896,6 +908,9 @@
 
     },
     "Plugged In" : {
+
+    },
+    "Popover mode shows clipboard as a dropdown attached to the clipboard button. Panel mode shows clipboard in a floating window near the notch." : {
 
     },
     "Progress bar" : {
@@ -964,6 +979,9 @@
 
     },
     "Search clipboard..." : {
+
+    },
+    "Search..." : {
 
     },
     "seconds" : {
@@ -1184,6 +1202,9 @@
 
     },
     "Try adjusting your search terms" : {
+
+    },
+    "Try different search terms" : {
 
     },
     "Two-finger swipe up on notch to close, two-finger swipe down on notch to open when **Open notch on hover** option is disabled" : {

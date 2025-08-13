@@ -1630,6 +1630,7 @@ struct ClipboardSettings: View {
     @Default(.enableClipboardManager) var enableClipboardManager
     @Default(.clipboardHistorySize) var clipboardHistorySize
     @Default(.showClipboardIcon) var showClipboardIcon
+    @Default(.clipboardDisplayMode) var clipboardDisplayMode
     
     var body: some View {
         Form {
@@ -1651,6 +1652,18 @@ struct ClipboardSettings: View {
             if enableClipboardManager {
                 Section {
                     Defaults.Toggle("Show Clipboard Icon", key: .showClipboardIcon)
+                    
+                    HStack {
+                        Text("Display Mode")
+                        Spacer()
+                        Picker("Display Mode", selection: $clipboardDisplayMode) {
+                            ForEach(ClipboardDisplayMode.allCases, id: \.self) { mode in
+                                Text(mode.displayName).tag(mode)
+                            }
+                        }
+                        .pickerStyle(.menu)
+                        .frame(width: 100)
+                    }
                     
                     HStack {
                         Text("History Size")
@@ -1688,7 +1701,12 @@ struct ClipboardSettings: View {
                 } header: {
                     Text("Settings")
                 } footer: {
-                    Text("Auto mode intelligently chooses between popover (desktop) and window (fullscreen apps) for the best experience. You can override this with manual selection.")
+                    switch clipboardDisplayMode {
+                    case .popover:
+                        Text("Popover mode shows clipboard as a dropdown attached to the clipboard button. Panel mode shows clipboard in a floating window near the notch.")
+                    case .panel:
+                        Text("Panel mode shows clipboard in a floating window near the notch. Popover mode shows clipboard as a dropdown attached to the clipboard button.")
+                    }
                 }
                 
                 Section {

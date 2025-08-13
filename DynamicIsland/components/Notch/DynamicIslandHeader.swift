@@ -15,6 +15,7 @@ struct DynamicIslandHeader: View {
     @ObservedObject var coordinator = DynamicIslandViewCoordinator.shared
     @ObservedObject var clipboardManager = ClipboardManager.shared
     @StateObject var tvm = TrayDrop.shared
+    @State private var showClipboardPopover = false
     
     var body: some View {
         HStack(spacing: 0) {
@@ -62,8 +63,13 @@ struct DynamicIslandHeader: View {
                     
                     if Defaults[.enableClipboardManager] && Defaults[.showClipboardIcon] {
                         Button(action: {
-                            // Always use panel mode
-                            ClipboardPanelManager.shared.toggleClipboardPanel()
+                            // Switch behavior based on display mode
+                            switch Defaults[.clipboardDisplayMode] {
+                            case .panel:
+                                ClipboardPanelManager.shared.toggleClipboardPanel()
+                            case .popover:
+                                showClipboardPopover.toggle()
+                            }
                         }) {
                             Capsule()
                                 .fill(.black)
@@ -76,6 +82,9 @@ struct DynamicIslandHeader: View {
                                 }
                         }
                         .buttonStyle(PlainButtonStyle())
+                        .popover(isPresented: $showClipboardPopover, arrowEdge: .bottom) {
+                            ClipboardPopover()
+                        }
                         .onAppear {
                             if Defaults[.enableClipboardManager] && !clipboardManager.isMonitoring {
                                 clipboardManager.startMonitoring()
@@ -125,7 +134,18 @@ struct DynamicIslandHeader: View {
         .onChange(of: coordinator.shouldToggleClipboardPopover) { _ in
             // Only toggle if clipboard is enabled
             if Defaults[.enableClipboardManager] {
-                ClipboardPanelManager.shared.toggleClipboardPanel()
+                switch Defaults[.clipboardDisplayMode] {
+                case .panel:
+                    ClipboardPanelManager.shared.toggleClipboardPanel()
+                case .popover:
+                    showClipboardPopover.toggle()
+                }
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("ToggleClipboardPopover"))) { _ in
+            // Handle keyboard shortcut for popover mode
+            if Defaults[.enableClipboardManager] && Defaults[.clipboardDisplayMode] == .popover {
+                showClipboardPopover.toggle()
             }
         }
     }
