@@ -1324,8 +1324,8 @@ struct TimerSettings: View {
                         Text("Custom Timer Duration")
                             .font(.headline)
                         
-                        HStack(spacing: 16) {
-                            VStack {
+                        HStack(spacing: 20) {
+                            VStack(alignment: .center, spacing: 8) {
                                 Text("Minutes")
                                     .font(.system(size: 14, weight: .medium))
                                     .foregroundStyle(.secondary)
@@ -1336,10 +1336,10 @@ struct TimerSettings: View {
                                     }
                                 }
                                 .pickerStyle(.menu)
-                                .frame(width: 80, height: 40)
+                                .frame(width: 100)
                             }
                             
-                            VStack {
+                            VStack(alignment: .center, spacing: 8) {
                                 Text("Seconds")
                                     .font(.system(size: 14, weight: .medium))
                                     .foregroundStyle(.secondary)
@@ -1350,20 +1350,32 @@ struct TimerSettings: View {
                                     }
                                 }
                                 .pickerStyle(.menu)
-                                .frame(width: 80, height: 40)
+                                .frame(width: 100)
                             }
                         }
+                        .frame(maxWidth: .infinity)
                         
-                        HStack {
-                            Text("Current custom timer: \(customTimerDisplayText)")
-                                .foregroundStyle(.secondary)
-                            Spacer()
-                            Button("Update") {
-                                customTimerDuration = Double(customMinutes * 60 + customSeconds)
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack {
+                                Text("Current custom timer:")
+                                    .foregroundStyle(.secondary)
+                                Text(customTimerDisplayText)
+                                    .foregroundStyle(.primary)
+                                    .fontWeight(.medium)
+                                Spacer()
                             }
-                            .disabled(customMinutes == 0 && customSeconds == 0)
+                            
+                            HStack {
+                                Spacer()
+                                Button("Update Timer") {
+                                    customTimerDuration = Double(customMinutes * 60 + customSeconds)
+                                }
+                                .disabled(customMinutes == 0 && customSeconds == 0)
+                                .buttonStyle(.borderedProminent)
+                            }
                         }
                     }
+                    .padding(.vertical, 8)
                 } header: {
                     Text("Custom Timer")
                 } footer: {
