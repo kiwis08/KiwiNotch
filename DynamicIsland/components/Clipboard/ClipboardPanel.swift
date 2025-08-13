@@ -75,11 +75,46 @@ class ClipboardPanel: NSPanel {
         let screenFrame = screen.visibleFrame
         let panelFrame = frame
         
-        // Position at top center of screen (near where the notch would be)
+        // Check if we have a saved position
+        if let savedPosition = getSavedPosition() {
+            // Validate saved position is still on screen
+            let savedFrame = NSRect(origin: savedPosition, size: panelFrame.size)
+            if screenFrame.intersects(savedFrame) {
+                setFrameOrigin(savedPosition)
+                return
+            }
+        }
+        
+        // Default to center of screen (not top center)
         let xPosition = (screenFrame.width - panelFrame.width) / 2 + screenFrame.minX
-        let yPosition = screenFrame.maxY - panelFrame.height - 10 // 10px from top
+        let yPosition = (screenFrame.height - panelFrame.height) / 2 + screenFrame.minY
         
         setFrameOrigin(NSPoint(x: xPosition, y: yPosition))
+    }
+    
+    private func getSavedPosition() -> NSPoint? {
+        let defaults = UserDefaults.standard
+        let x = defaults.double(forKey: "clipboardPanelPositionX")
+        let y = defaults.double(forKey: "clipboardPanelPositionY")
+        
+        // Check if we have valid saved coordinates (not default 0.0)
+        if x != 0.0 || y != 0.0 {
+            return NSPoint(x: x, y: y)
+        }
+        return nil
+    }
+    
+    private func saveCurrentPosition() {
+        let currentOrigin = frame.origin
+        let defaults = UserDefaults.standard
+        defaults.set(currentOrigin.x, forKey: "clipboardPanelPositionX")
+        defaults.set(currentOrigin.y, forKey: "clipboardPanelPositionY")
+    }
+    
+    override func setFrameOrigin(_ point: NSPoint) {
+        super.setFrameOrigin(point)
+        // Save position whenever it changes (user dragging)
+        saveCurrentPosition()
     }
     
     func positionNearMouse() {

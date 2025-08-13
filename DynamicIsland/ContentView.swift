@@ -125,7 +125,15 @@ struct ContentView: View {
                             
                             // Only close if mouse leaves and the notch is open and no popovers are active
                             if !hovering && vm.notchState == .open && !vm.isBatteryPopoverActive {
-                                vm.close()
+                                // Add slight delay for stats tab to prevent accidental closure during layout changes
+                                let delay: Double = (coordinator.currentView == .stats) ? 0.2 : 0.0
+                                
+                                DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                                    // Double-check conditions after delay
+                                    if !isHovering && vm.notchState == .open && !vm.isBatteryPopoverActive {
+                                        vm.close()
+                                    }
+                                }
                             }
                         }
                         .onTapGesture {

@@ -327,7 +327,7 @@
     "CPU Usage" : {
 
     },
-    "Current custom timer: %@" : {
+    "Current custom timer:" : {
 
     },
     "Current History" : {
@@ -1219,7 +1219,7 @@
     "unmuted" : {
 
     },
-    "Update" : {
+    "Update Timer" : {
 
     },
     "Upgrade to Pro" : {
