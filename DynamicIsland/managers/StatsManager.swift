@@ -120,8 +120,8 @@ class StatsManager: ObservableObject {
         var downloadSpeed: Double = 0.0
         var uploadSpeed: Double = 0.0
         
-        // Only calculate speeds if we have a reasonable time interval and previous data
-        if timeInterval > 0.1 && previousNetworkStats.bytesIn > 0 && previousNetworkStats.bytesOut > 0 {
+        // Only calculate speeds if we have a reasonable time interval and this isn't the first run
+        if timeInterval > 0.1 && (previousNetworkStats.bytesIn > 0 || previousNetworkStats.bytesOut > 0) {
             let bytesDownloaded = currentNetworkStats.bytesIn > previousNetworkStats.bytesIn ? 
                                 currentNetworkStats.bytesIn - previousNetworkStats.bytesIn : 0
             let bytesUploaded = currentNetworkStats.bytesOut > previousNetworkStats.bytesOut ? 
@@ -136,8 +136,8 @@ class StatsManager: ObservableObject {
         var readSpeed: Double = 0.0
         var writeSpeed: Double = 0.0
         
-        // Only calculate speeds if we have a reasonable time interval and previous data
-        if timeInterval > 0.1 && previousDiskStats.bytesRead > 0 && previousDiskStats.bytesWritten > 0 {
+        // Only calculate speeds if we have a reasonable time interval and this isn't the first run
+        if timeInterval > 0.1 && (previousDiskStats.bytesRead > 0 || previousDiskStats.bytesWritten > 0) {
             let bytesRead = currentDiskStats.bytesRead > previousDiskStats.bytesRead ? 
                            currentDiskStats.bytesRead - previousDiskStats.bytesRead : 0
             let bytesWritten = currentDiskStats.bytesWritten > previousDiskStats.bytesWritten ? 

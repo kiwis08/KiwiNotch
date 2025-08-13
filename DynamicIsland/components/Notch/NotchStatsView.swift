@@ -118,25 +118,71 @@ struct NotchStatsView: View {
         return graphs
     }
     
-    // Simplified and more consistent layout system
+    // Smart grid layout system for different graph counts
     @ViewBuilder
     var statsGridLayout: some View {
         let graphCount = availableGraphs.count
         
-        // Use LazyVGrid for all cases - more predictable layout behavior
-        LazyVGrid(
-            columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: min(graphCount, 3)),
-            spacing: 12
-        ) {
-            ForEach(0..<graphCount, id: \.self) { index in
-                UnifiedStatsCard(graphData: availableGraphs[index])
-                    .transition(.asymmetric(
-                        insertion: .scale.combined(with: .opacity).animation(.easeInOut(duration: 0.4)),
-                        removal: .scale.combined(with: .opacity).animation(.easeInOut(duration: 0.4))
-                    ))
+        if graphCount <= 3 {
+            // 1-3 graphs: Single row with equal spacing
+            LazyVGrid(
+                columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: graphCount),
+                spacing: 12
+            ) {
+                ForEach(0..<graphCount, id: \.self) { index in
+                    UnifiedStatsCard(graphData: availableGraphs[index])
+                        .transition(.asymmetric(
+                            insertion: .scale.combined(with: .opacity).animation(.easeInOut(duration: 0.4)),
+                            removal: .scale.combined(with: .opacity).animation(.easeInOut(duration: 0.4))
+                        ))
+                }
+            }
+        } else if graphCount == 4 {
+            // 4 graphs: 2x2 grid
+            LazyVGrid(
+                columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 2),
+                spacing: 12
+            ) {
+                ForEach(0..<graphCount, id: \.self) { index in
+                    UnifiedStatsCard(graphData: availableGraphs[index])
+                        .transition(.asymmetric(
+                            insertion: .scale.combined(with: .opacity).animation(.easeInOut(duration: 0.4)),
+                            removal: .scale.combined(with: .opacity).animation(.easeInOut(duration: 0.4))
+                        ))
+                }
+            }
+        } else {
+            // 5 graphs: First row 3 graphs, second row 2 graphs (half-width each)
+            VStack(spacing: 12) {
+                // First row: 3 graphs
+                LazyVGrid(
+                    columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 3),
+                    spacing: 8
+                ) {
+                    ForEach(0..<3, id: \.self) { index in
+                        UnifiedStatsCard(graphData: availableGraphs[index])
+                            .transition(.asymmetric(
+                                insertion: .scale.combined(with: .opacity).animation(.easeInOut(duration: 0.4)),
+                                removal: .scale.combined(with: .opacity).animation(.easeInOut(duration: 0.4))
+                            ))
+                    }
+                }
+                
+                // Second row: 2 graphs (half-width each)
+                LazyVGrid(
+                    columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 2),
+                    spacing: 8
+                ) {
+                    ForEach(3..<graphCount, id: \.self) { index in
+                        UnifiedStatsCard(graphData: availableGraphs[index])
+                            .transition(.asymmetric(
+                                insertion: .scale.combined(with: .opacity).animation(.easeInOut(duration: 0.4)),
+                                removal: .scale.combined(with: .opacity).animation(.easeInOut(duration: 0.4))
+                            ))
+                    }
+                }
             }
         }
-        .animation(.easeInOut(duration: 0.4), value: graphCount)
     }
     
     // Helper function to create graph views using unified component
