@@ -92,6 +92,24 @@ struct DynamicIslandHeader: View {
                         }
                     }
                     
+                    // ColorPicker button
+                    if Defaults[.enableColorPickerFeature] {
+                        Button(action: {
+                            ColorPickerPanelManager.shared.toggleColorPickerPanel()
+                        }) {
+                            Capsule()
+                                .fill(.black)
+                                .frame(width: 30, height: 30)
+                                .overlay {
+                                    Image(systemName: "eyedropper")
+                                        .foregroundColor(.white)
+                                        .padding()
+                                        .imageScale(.medium)
+                                }
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                    }
+                    
                     if Defaults[.settingsIconInNotch] {
                         Button(action: {
                             SettingsWindowController.shared.showWindow()

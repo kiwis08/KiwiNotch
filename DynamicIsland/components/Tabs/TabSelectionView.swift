@@ -19,6 +19,7 @@ struct TabSelectionView: View {
     @ObservedObject var coordinator = DynamicIslandViewCoordinator.shared
     @Default(.enableTimerFeature) var enableTimerFeature
     @Default(.enableStatsFeature) var enableStatsFeature
+    @Default(.enableColorPickerFeature) var enableColorPickerFeature
     @Namespace var animation
     
     var availableTabs: [TabModel] {
@@ -33,6 +34,10 @@ struct TabSelectionView: View {
         
         if enableStatsFeature {
             tabs.append(TabModel(label: "Stats", icon: "chart.line.uptrend.xyaxis", view: .stats))
+        }
+        
+        if enableColorPickerFeature {
+            tabs.append(TabModel(label: "ColorPicker", icon: "eyedropper", view: .colorPicker))
         }
         
         return tabs

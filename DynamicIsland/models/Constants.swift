@@ -186,6 +186,10 @@ extension Defaults.Keys {
     // MARK: Timer Feature
     static let enableTimerFeature = Key<Bool>("enableTimerFeature", default: true)
     
+    // MARK: ColorPicker Feature
+    static let enableColorPickerFeature = Key<Bool>("enableColorPickerFeature", default: true)
+    static let showColorFormats = Key<Bool>("showColorFormats", default: true)
+    
     // MARK: Clipboard Feature
     static let enableClipboardManager = Key<Bool>("enableClipboardManager", default: true)
     static let clipboardHistorySize = Key<Int>("clipboardHistorySize", default: 3)

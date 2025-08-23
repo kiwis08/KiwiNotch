@@ -35,6 +35,9 @@
     "%lld" : {
 
     },
+    "%lld colors" : {
+
+    },
     "%lld%%" : {
 
     },
@@ -138,6 +141,9 @@
 
     },
     "Appearance" : {
+
+    },
+    "Are you sure you want to delete this color from your history?" : {
 
     },
     "Automatically check for updates" : {
@@ -284,6 +290,9 @@
     "Clear Pinned Items" : {
 
     },
+    "Click 'Pick Color' or use Cmd+Shift+P to start picking colors" : {
+
+    },
     "Clipboard" : {
 
     },
@@ -300,6 +309,21 @@
 
     },
     "Close" : {
+
+    },
+    "Color Details" : {
+
+    },
+    "Color Formats" : {
+
+    },
+    "Color Picked!" : {
+
+    },
+    "Color Picker" : {
+
+    },
+    "ColorPicker Disabled" : {
 
     },
     "Coming soon" : {
@@ -378,6 +402,12 @@
 
     },
     "Default: dynamic.m4a" : {
+
+    },
+    "Delete" : {
+
+    },
+    "Delete Color" : {
 
     },
     "Description" : {
@@ -465,6 +495,9 @@
           }
         }
       }
+    },
+    "Enable ColorPicker in Settings → ColorPicker" : {
+
     },
     "Enable global keyboard shortcuts above to customize your shortcuts." : {
 
@@ -782,6 +815,15 @@
     "No clipboard history" : {
 
     },
+    "No Colors Found" : {
+
+    },
+    "No colors match '%@'" : {
+
+    },
+    "No Colors Yet" : {
+
+    },
     "No custom animation available" : {
 
     },
@@ -895,6 +937,15 @@
         }
       }
     },
+    "Pick Color" : {
+
+    },
+    "Picked %@" : {
+
+    },
+    "Picked Color" : {
+
+    },
     "Pin items from history to save them here" : {
 
     },
@@ -950,6 +1001,9 @@
         }
       }
     },
+    "Recent Colors" : {
+
+    },
     "Release name" : {
       "localizations" : {
         "en" : {
@@ -981,6 +1035,9 @@
     "Search clipboard..." : {
 
     },
+    "Search colors..." : {
+
+    },
     "Search..." : {
 
     },
@@ -996,6 +1053,9 @@
       }
     },
     "Seconds" : {
+
+    },
+    "Select a color to view details" : {
 
     },
     "Select Calendars" : {
@@ -1050,6 +1110,9 @@
           }
         }
       }
+    },
+    "Show Color History" : {
+
     },
     "Show cool face animation while inactivity" : {
       "extractionState" : "stale",
@@ -1114,6 +1177,9 @@
 
     },
     "Start Monitoring" : {
+
+    },
+    "Start picking colors to build your history" : {
 
     },
     "Starts a 5-minute demo timer to test the timer live activity feature. Only works when timer feature is enabled." : {

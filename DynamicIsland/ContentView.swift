@@ -322,6 +322,8 @@ struct ContentView: View {
                                   NotchTimerView()
                               case .stats:
                                   NotchStatsView()
+                              case .colorPicker:
+                                  NotchColorPickerView()
                           }
                       }
                       .transition(.asymmetric(
