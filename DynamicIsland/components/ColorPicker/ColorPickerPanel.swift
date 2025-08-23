@@ -20,11 +20,12 @@ class ColorPickerPanelManager: ObservableObject {
         hideColorPickerPanel() // Close any existing panel
         
         let newPanel = ColorPickerPanel()
-        newPanel.positionPanel()
-        
         self.panel = newPanel
         
-        // Make the panel key and order front to ensure it can receive focus
+        // Position the panel
+        newPanel.positionPanel()
+        
+        // Make the panel visible and focused
         newPanel.makeKeyAndOrderFront(nil)
         newPanel.orderFrontRegardless()
         
@@ -60,35 +61,52 @@ class ColorPickerPanelManager: ObservableObject {
 
 class ColorPickerPanel: NSPanel {
     override var canBecomeKey: Bool { true }
-    override var canBecomeMain: Bool { false }
+    override var canBecomeMain: Bool { true }
     
     init() {
         super.init(
-            contentRect: NSRect(x: 0, y: 0, width: 450, height: 600),
-            styleMask: [.titled, .closable, .fullSizeContentView],
+            contentRect: .zero,
+            styleMask: [.borderless, .nonactivatingPanel],
             backing: .buffered,
-            defer: false
+            defer: true
         )
         
         setupPanel()
     }
     
     private func setupPanel() {
-        title = "Color Picker"
-        level = .floating
-        isMovableByWindowBackground = true
-        backgroundColor = NSColor.clear
+        backgroundColor = .clear
         isOpaque = false
         hasShadow = true
-        
+        level = .floating
+        isMovableByWindowBackground = true
         titlebarAppearsTransparent = true
         titleVisibility = .hidden
+        isFloatingPanel = true
+        
+        // Allow dragging from any part of the window
+        styleMask.insert(.fullSizeContentView)
+        
+        collectionBehavior = [
+            .canJoinAllSpaces,
+            .stationary,
+            .fullScreenAuxiliary  // Float above full-screen apps
+        ]
+        
+        // Accept mouse moved events for proper hover behavior
+        acceptsMouseMovedEvents = true
         
         let panelView = ColorPickerPanelView {
             ColorPickerPanelManager.shared.hideColorPickerPanel()
         }
         
-        contentView = NSHostingView(rootView: panelView)
+        let hostingView = NSHostingView(rootView: panelView)
+        contentView = hostingView
+        
+        // Set initial size
+        let preferredSize = CGSize(width: 450, height: 600)
+        hostingView.setFrameSize(preferredSize)
+        setContentSize(preferredSize)
     }
     
     func positionPanel() {
@@ -97,11 +115,46 @@ class ColorPickerPanel: NSPanel {
         let screenFrame = screen.visibleFrame
         let panelFrame = frame
         
-        let xPosition = screenFrame.midX - panelFrame.width / 2
-        let yPosition = screenFrame.midY - panelFrame.height / 2
+        // Check if we have a saved position
+        if let savedPosition = getSavedPosition() {
+            // Validate saved position is still on screen
+            let savedFrame = NSRect(origin: savedPosition, size: panelFrame.size)
+            if screenFrame.intersects(savedFrame) {
+                setFrameOrigin(savedPosition)
+                return
+            }
+        }
+        
+        // Default to center of screen (not top center)
+        let xPosition = (screenFrame.width - panelFrame.width) / 2 + screenFrame.minX
+        let yPosition = (screenFrame.height - panelFrame.height) / 2 + screenFrame.minY
         
         setFrameOrigin(NSPoint(x: xPosition, y: yPosition))
-        print("ColorPicker: Panel positioned at \(xPosition), \(yPosition)")
+    }
+    
+    private func getSavedPosition() -> NSPoint? {
+        let defaults = UserDefaults.standard
+        let x = defaults.double(forKey: "colorPickerPanelPositionX")
+        let y = defaults.double(forKey: "colorPickerPanelPositionY")
+        
+        // Check if we have valid saved coordinates (not default 0.0)
+        if x != 0.0 || y != 0.0 {
+            return NSPoint(x: x, y: y)
+        }
+        return nil
+    }
+    
+    private func saveCurrentPosition() {
+        let currentOrigin = frame.origin
+        let defaults = UserDefaults.standard
+        defaults.set(currentOrigin.x, forKey: "colorPickerPanelPositionX")
+        defaults.set(currentOrigin.y, forKey: "colorPickerPanelPositionY")
+    }
+    
+    override func setFrameOrigin(_ point: NSPoint) {
+        super.setFrameOrigin(point)
+        // Save position whenever it changes (user dragging)
+        saveCurrentPosition()
     }
 }
 
@@ -126,16 +179,38 @@ struct ColorPickerPanelView: View {
     }
     
     var body: some View {
-        VStack(spacing: 0) {
-            headerSection
+        ZStack {
+            VStack(spacing: 0) {
+                headerSection
+                
+                Divider()
+                    .background(Color.gray.opacity(0.3))
+                
+                contentSection
+            }
+            .background(ColorPickerVisualEffectView(material: .hudWindow, blendingMode: .behindWindow))
+            .cornerRadius(12)
             
-            Divider()
-                .background(Color.gray.opacity(0.3))
-            
-            contentSection
+            // Close button positioned in top-left corner
+            VStack {
+                HStack {
+                    Button(action: onClose) {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(.white)
+                            .frame(width: 24, height: 24)
+                            .background(Color.red)
+                            .clipShape(Circle())
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    .padding(.leading, 12)
+                    .padding(.top, 12)
+                    
+                    Spacer()
+                }
+                Spacer()
+            }
         }
-        .background(ColorPickerVisualEffectView(material: .hudWindow, blendingMode: .behindWindow))
-        .cornerRadius(12)
         .alert("Delete Color", isPresented: $showingDeleteAlert) {
             Button("Cancel", role: .cancel) { }
             Button("Delete", role: .destructive) {
@@ -195,14 +270,6 @@ struct ColorPickerPanelView: View {
                     }
                     .buttonStyle(PlainButtonStyle())
                     .disabled(colorPickerManager.colorHistory.isEmpty)
-                    
-                    // Close Button
-                    Button(action: onClose) {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(.secondary)
-                    }
-                    .buttonStyle(PlainButtonStyle())
                 }
             }
             

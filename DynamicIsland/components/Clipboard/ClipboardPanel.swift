@@ -157,44 +157,66 @@ struct ClipboardPanelView: View {
     }
     
     var body: some View {
-        VStack(spacing: 0) {
-            // Header with tabs
-            ClipboardPanelHeader(
-                selectedTab: $selectedTab,
-                searchText: $searchText, 
-                onClose: onClose
-            )
-            
-            Divider()
-                .background(Color.gray.opacity(0.3))
-            
-            // Content
-            if filteredItems.isEmpty {
-                ClipboardPanelEmptyState(
-                    hasSearch: !searchText.isEmpty,
-                    isHistoryTab: selectedTab == .history
+        ZStack {
+            VStack(spacing: 0) {
+                // Header with tabs
+                ClipboardPanelHeader(
+                    selectedTab: $selectedTab,
+                    searchText: $searchText, 
+                    onClose: onClose
                 )
-            } else {
-                ScrollView {
-                    LazyVStack(spacing: 1) {
-                        ForEach(filteredItems) { item in
-                            ClipboardPanelItemRow(
-                                item: item,
-                                isHovered: hoveredItemId == item.id,
-                                isPinned: clipboardManager.pinnedItems.contains(where: { $0.id == item.id })
-                            ) { hoverId in
-                                hoveredItemId = hoverId
+                
+                Divider()
+                    .background(Color.gray.opacity(0.3))
+                
+                // Content
+                if filteredItems.isEmpty {
+                    ClipboardPanelEmptyState(
+                        hasSearch: !searchText.isEmpty,
+                        isHistoryTab: selectedTab == .history
+                    )
+                } else {
+                    ScrollView {
+                        LazyVStack(spacing: 1) {
+                            ForEach(filteredItems) { item in
+                                ClipboardPanelItemRow(
+                                    item: item,
+                                    isHovered: hoveredItemId == item.id,
+                                    isPinned: clipboardManager.pinnedItems.contains(where: { $0.id == item.id })
+                                ) { hoverId in
+                                    hoveredItemId = hoverId
+                                }
                             }
                         }
+                        .padding(.vertical, 8)
                     }
-                    .padding(.vertical, 8)
                 }
             }
+            .frame(width: 320, height: 400)
+            .background(VisualEffectView(material: .hudWindow, blendingMode: .behindWindow))
+            .cornerRadius(12)
+            .shadow(color: .black.opacity(0.4), radius: 20, x: 0, y: 10)
+            
+            // Close button positioned in top-left corner
+            VStack {
+                HStack {
+                    Button(action: onClose) {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(.white)
+                            .frame(width: 24, height: 24)
+                            .background(Color.red)
+                            .clipShape(Circle())
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    .padding(.leading, 12)
+                    .padding(.top, 12)
+                    
+                    Spacer()
+                }
+                Spacer()
+            }
         }
-        .frame(width: 320, height: 400)
-        .background(VisualEffectView(material: .hudWindow, blendingMode: .behindWindow))
-        .cornerRadius(12)
-        .shadow(color: .black.opacity(0.4), radius: 20, x: 0, y: 10)
     }
 }
 
@@ -234,13 +256,6 @@ struct ClipboardPanelHeader: View {
                 }
                 .buttonStyle(PlainButtonStyle())
                 .disabled(selectedTab == .history ? clipboardManager.clipboardHistory.isEmpty : clipboardManager.pinnedItems.isEmpty)
-                
-                Button(action: onClose) {
-                    Image(systemName: "xmark")
-                        .foregroundColor(.secondary)
-                        .font(.system(size: 12, weight: .medium))
-                }
-                .buttonStyle(PlainButtonStyle())
             }
             .padding(.horizontal, 16)
             .padding(.top, 12)
