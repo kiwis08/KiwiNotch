@@ -200,17 +200,9 @@ struct ClipboardPanelView: View {
             // Close button positioned in top-left corner
             VStack {
                 HStack {
-                    Button(action: onClose) {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundColor(.white)
-                            .frame(width: 24, height: 24)
-                            .background(Color.red)
-                            .clipShape(Circle())
-                    }
-                    .buttonStyle(PlainButtonStyle())
-                    .padding(.leading, 12)
-                    .padding(.top, 12)
+                    NativeStyleCloseButton(action: onClose)
+                        .padding(.leading, 8)
+                        .padding(.top, 8)
                     
                     Spacer()
                 }

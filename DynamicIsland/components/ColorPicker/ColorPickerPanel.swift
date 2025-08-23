@@ -194,17 +194,9 @@ struct ColorPickerPanelView: View {
             // Close button positioned in top-left corner
             VStack {
                 HStack {
-                    Button(action: onClose) {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundColor(.white)
-                            .frame(width: 24, height: 24)
-                            .background(Color.red)
-                            .clipShape(Circle())
-                    }
-                    .buttonStyle(PlainButtonStyle())
-                    .padding(.leading, 12)
-                    .padding(.top, 12)
+                    NativeStyleCloseButton(action: onClose)
+                        .padding(.leading, 8)
+                        .padding(.top, 8)
                     
                     Spacer()
                 }
@@ -666,6 +658,30 @@ struct ColorPickerVisualEffectView: NSViewRepresentable {
     }
     
     func updateNSView(_ nsView: NSVisualEffectView, context: Context) {}
+}
+
+// MARK: - Native Style Close Button Component
+struct NativeStyleCloseButton: View {
+    let action: () -> Void
+    @State private var isHovered = false
+    
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: "xmark")
+                .font(.system(size: 8, weight: .medium))
+                .foregroundColor(.white)
+                .frame(width: 13, height: 13)
+                .background(isHovered ? Color.red.opacity(0.8) : Color.red)
+                .clipShape(Circle())
+                .scaleEffect(isHovered ? 1.1 : 1.0)
+        }
+        .buttonStyle(PlainButtonStyle())
+        .onHover { hovering in
+            withAnimation(.easeInOut(duration: 0.1)) {
+                isHovered = hovering
+            }
+        }
+    }
 }
 
 #Preview {
