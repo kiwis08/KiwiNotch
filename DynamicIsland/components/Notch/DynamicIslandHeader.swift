@@ -86,6 +86,16 @@ struct DynamicIslandHeader: View {
                         .popover(isPresented: $showClipboardPopover, arrowEdge: .bottom) {
                             ClipboardPopover()
                         }
+                        .onChange(of: showClipboardPopover) { isActive in
+                            vm.isClipboardPopoverActive = isActive
+                            
+                            // If popover was closed, trigger a hover recheck
+                            if !isActive {
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                    vm.shouldRecheckHover.toggle()
+                                }
+                            }
+                        }
                         .onAppear {
                             if Defaults[.enableClipboardManager] && !clipboardManager.isMonitoring {
                                 clipboardManager.startMonitoring()
@@ -116,6 +126,16 @@ struct DynamicIslandHeader: View {
                         .buttonStyle(PlainButtonStyle())
                         .popover(isPresented: $showColorPickerPopover, arrowEdge: .bottom) {
                             ColorPickerPopover()
+                        }
+                        .onChange(of: showColorPickerPopover) { isActive in
+                            vm.isColorPickerPopoverActive = isActive
+                            
+                            // If popover was closed, trigger a hover recheck
+                            if !isActive {
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                    vm.shouldRecheckHover.toggle()
+                                }
+                            }
                         }
                     }
                     

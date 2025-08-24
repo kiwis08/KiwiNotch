@@ -124,13 +124,13 @@ struct ContentView: View {
                             }
                             
                             // Only close if mouse leaves and the notch is open and no popovers are active
-                            if !hovering && vm.notchState == .open && !vm.isBatteryPopoverActive {
+                            if !hovering && vm.notchState == .open && !vm.isBatteryPopoverActive && !vm.isClipboardPopoverActive && !vm.isColorPickerPopoverActive {
                                 // Add slight delay for stats tab to prevent accidental closure during layout changes
                                 let delay: Double = (coordinator.currentView == .stats) ? 0.2 : 0.0
                                 
                                 DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
                                     // Double-check conditions after delay
-                                    if !isHovering && vm.notchState == .open && !vm.isBatteryPopoverActive {
+                                    if !isHovering && vm.notchState == .open && !vm.isBatteryPopoverActive && !vm.isClipboardPopoverActive && !vm.isColorPickerPopoverActive {
                                         vm.close()
                                     }
                                 }
@@ -181,6 +181,14 @@ struct ContentView: View {
                 .onChange(of: vm.isBatteryPopoverActive) { _, newPopoverState in
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                         if !newPopoverState && !isHovering && vm.notchState == .open {
+                            vm.close()
+                        }
+                    }
+                }
+                .onChange(of: vm.shouldRecheckHover) { _, _ in
+                    // Recheck hover state when popovers are closed
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        if vm.notchState == .open && !vm.isBatteryPopoverActive && !vm.isClipboardPopoverActive && !vm.isColorPickerPopoverActive && !isHovering {
                             vm.close()
                         }
                     }
@@ -527,7 +535,7 @@ struct ContentView: View {
                 }
                 
                 // Close the notch if it's open and no popovers are active
-                if vm.notchState == .open && !vm.isBatteryPopoverActive {
+                if vm.notchState == .open && !vm.isBatteryPopoverActive && !vm.isClipboardPopoverActive && !vm.isColorPickerPopoverActive {
                     vm.close()
                 }
             }
