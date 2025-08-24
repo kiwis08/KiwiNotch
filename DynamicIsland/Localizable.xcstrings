@@ -59,13 +59,25 @@
     "3 items" : {
 
     },
+    "5 colors" : {
+
+    },
     "5 items" : {
 
     },
     "7 items" : {
 
     },
+    "10 colors" : {
+
+    },
     "10 items" : {
+
+    },
+    "15 colors" : {
+
+    },
+    "20 colors" : {
 
     },
     "About" : {
@@ -284,6 +296,12 @@
     "Clear clipboard history removes recent copies. Clear pinned items removes your favorites. Both actions are permanent." : {
 
     },
+    "Clear Color History" : {
+
+    },
+    "Clear color history removes all picked colors. Start color picking begins screen color capture mode." : {
+
+    },
     "Clear Data" : {
 
     },
@@ -317,10 +335,19 @@
     "Color Formats" : {
 
     },
+    "Color History" : {
+
+    },
     "Color Picked!" : {
 
     },
     "Color Picker" : {
+
+    },
+    "Color Picker feature is disabled" : {
+
+    },
+    "Color Picker Panel:" : {
 
     },
     "ColorPicker Disabled" : {
@@ -523,6 +550,9 @@
 
     },
     "Enable or disable the timer functionality in the Dynamic Island. The live activity toggle controls whether timer progress is shown in the expanded view." : {
+
+    },
+    "Enable screen color picking functionality. Use Cmd+Shift+P to quickly access the color picker." : {
 
     },
     "Enable sneak peek" : {
@@ -915,10 +945,16 @@
     "Opens the clipboard history panel. Default is Cmd+Shift+V (similar to Windows+V on PC). Only works when clipboard feature is enabled." : {
 
     },
+    "Opens the color picker panel for screen color capture. Default is Cmd+Shift+P. Only works when color picker feature is enabled." : {
+
+    },
     "Opens the detailed system performance monitor panel. Default is Cmd+Shift+S. Only works when stats feature is enabled." : {
 
     },
     "Panel mode shows clipboard in a floating window near the notch. Popover mode shows clipboard as a dropdown attached to the clipboard button." : {
+
+    },
+    "Panel mode shows color picker in a floating window. Popover mode shows color picker as a dropdown attached to the color picker button." : {
 
     },
     "Pause" : {
@@ -946,6 +982,9 @@
     "Picked Color" : {
 
     },
+    "Picking Status" : {
+
+    },
     "Pin items from history to save them here" : {
 
     },
@@ -964,6 +1003,9 @@
     "Popover mode shows clipboard as a dropdown attached to the clipboard button. Panel mode shows clipboard in a floating window near the notch." : {
 
     },
+    "Popover mode shows color picker as a dropdown attached to the color picker button. Panel mode shows color picker in a floating window." : {
+
+    },
     "Progress bar" : {
       "localizations" : {
         "en" : {
@@ -975,6 +1017,9 @@
       }
     },
     "Progressbar style" : {
+
+    },
+    "Quick Actions" : {
 
     },
     "Quit" : {
@@ -1000,6 +1045,9 @@
           }
         }
       }
+    },
+    "Ready" : {
+
     },
     "Recent Colors" : {
 
@@ -1114,6 +1162,9 @@
     "Show Color History" : {
 
     },
+    "Show Color Picker Panel" : {
+
+    },
     "Show cool face animation while inactivity" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1173,6 +1224,9 @@
     "Start" : {
 
     },
+    "Start Color Picking" : {
+
+    },
     "Start Demo Timer:" : {
 
     },
@@ -1204,6 +1258,9 @@
 
     },
     "Stats Panel:" : {
+
+    },
+    "Status & Actions" : {
 
     },
     "Stop" : {

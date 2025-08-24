@@ -179,30 +179,16 @@ struct ColorPickerPanelView: View {
     }
     
     var body: some View {
-        ZStack {
-            VStack(spacing: 0) {
-                headerSection
-                
-                Divider()
-                    .background(Color.gray.opacity(0.3))
-                
-                contentSection
-            }
-            .background(ColorPickerVisualEffectView(material: .hudWindow, blendingMode: .behindWindow))
-            .cornerRadius(12)
+        VStack(spacing: 0) {
+            headerSection
             
-            // Close button positioned in top-left corner
-            VStack {
-                HStack {
-                    NativeStyleCloseButton(action: onClose)
-                        .padding(.leading, 8)
-                        .padding(.top, 8)
-                    
-                    Spacer()
-                }
-                Spacer()
-            }
+            Divider()
+                .background(Color.gray.opacity(0.3))
+            
+            contentSection
         }
+        .background(ColorPickerVisualEffectView(material: .hudWindow, blendingMode: .behindWindow))
+        .cornerRadius(12)
         .alert("Delete Color", isPresented: $showingDeleteAlert) {
             Button("Cancel", role: .cancel) { }
             Button("Delete", role: .destructive) {
@@ -219,6 +205,9 @@ struct ColorPickerPanelView: View {
         VStack(spacing: 12) {
             // Title and controls
             HStack {
+                // Close button
+                NativeStyleCloseButton(action: onClose)
+                
                 HStack(spacing: 8) {
                     Image(systemName: "eyedropper.halffull")
                         .font(.system(size: 16, weight: .medium))

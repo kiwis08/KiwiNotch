@@ -157,58 +157,44 @@ struct ClipboardPanelView: View {
     }
     
     var body: some View {
-        ZStack {
-            VStack(spacing: 0) {
-                // Header with tabs
-                ClipboardPanelHeader(
-                    selectedTab: $selectedTab,
-                    searchText: $searchText, 
-                    onClose: onClose
+        VStack(spacing: 0) {
+            // Header with tabs
+            ClipboardPanelHeader(
+                selectedTab: $selectedTab,
+                searchText: $searchText, 
+                onClose: onClose
+            )
+            
+            Divider()
+                .background(Color.gray.opacity(0.3))
+            
+            // Content
+            if filteredItems.isEmpty {
+                ClipboardPanelEmptyState(
+                    hasSearch: !searchText.isEmpty,
+                    isHistoryTab: selectedTab == .history
                 )
-                
-                Divider()
-                    .background(Color.gray.opacity(0.3))
-                
-                // Content
-                if filteredItems.isEmpty {
-                    ClipboardPanelEmptyState(
-                        hasSearch: !searchText.isEmpty,
-                        isHistoryTab: selectedTab == .history
-                    )
-                } else {
-                    ScrollView {
-                        LazyVStack(spacing: 1) {
-                            ForEach(filteredItems) { item in
-                                ClipboardPanelItemRow(
-                                    item: item,
-                                    isHovered: hoveredItemId == item.id,
-                                    isPinned: clipboardManager.pinnedItems.contains(where: { $0.id == item.id })
-                                ) { hoverId in
-                                    hoveredItemId = hoverId
-                                }
+            } else {
+                ScrollView {
+                    LazyVStack(spacing: 1) {
+                        ForEach(filteredItems) { item in
+                            ClipboardPanelItemRow(
+                                item: item,
+                                isHovered: hoveredItemId == item.id,
+                                isPinned: clipboardManager.pinnedItems.contains(where: { $0.id == item.id })
+                            ) { hoverId in
+                                hoveredItemId = hoverId
                             }
                         }
-                        .padding(.vertical, 8)
                     }
+                    .padding(.vertical, 8)
                 }
-            }
-            .frame(width: 320, height: 400)
-            .background(VisualEffectView(material: .hudWindow, blendingMode: .behindWindow))
-            .cornerRadius(12)
-            .shadow(color: .black.opacity(0.4), radius: 20, x: 0, y: 10)
-            
-            // Close button positioned in top-left corner
-            VStack {
-                HStack {
-                    NativeStyleCloseButton(action: onClose)
-                        .padding(.leading, 8)
-                        .padding(.top, 8)
-                    
-                    Spacer()
-                }
-                Spacer()
             }
         }
+        .frame(width: 320, height: 400)
+        .background(VisualEffectView(material: .hudWindow, blendingMode: .behindWindow))
+        .cornerRadius(12)
+        .shadow(color: .black.opacity(0.4), radius: 20, x: 0, y: 10)
     }
 }
 
@@ -223,6 +209,9 @@ struct ClipboardPanelHeader: View {
         VStack(spacing: 8) {
             // Title and close button
             HStack {
+                // Close button
+                NativeStyleCloseButton(action: onClose)
+                
                 Image(systemName: "doc.on.clipboard")
                     .foregroundColor(.primary)
                     .font(.system(size: 16, weight: .medium))
@@ -336,6 +325,7 @@ struct ClipboardPanelItemRow: View {
     let isPinned: Bool
     let onHover: (UUID?) -> Void
     @ObservedObject var clipboardManager = ClipboardManager.shared
+    @State private var justCopied = false
     
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
@@ -388,10 +378,20 @@ struct ClipboardPanelItemRow: View {
                     // Copy button
                     Button(action: {
                         clipboardManager.copyToClipboard(item)
+                        
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            justCopied = true
+                        }
+                        
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                justCopied = false
+                            }
+                        }
                     }) {
-                        Image(systemName: "doc.on.doc")
+                        Image(systemName: justCopied ? "checkmark.circle.fill" : "doc.on.doc")
                             .font(.system(size: 11))
-                            .foregroundColor(.green)
+                            .foregroundColor(justCopied ? .green : .green)
                     }
                     .buttonStyle(PlainButtonStyle())
                     

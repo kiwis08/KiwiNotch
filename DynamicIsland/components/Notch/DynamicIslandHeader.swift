@@ -16,6 +16,7 @@ struct DynamicIslandHeader: View {
     @ObservedObject var clipboardManager = ClipboardManager.shared
     @StateObject var tvm = TrayDrop.shared
     @State private var showClipboardPopover = false
+    @State private var showColorPickerPopover = false
     
     var body: some View {
         HStack(spacing: 0) {
@@ -95,7 +96,12 @@ struct DynamicIslandHeader: View {
                     // ColorPicker button
                     if Defaults[.enableColorPickerFeature] {
                         Button(action: {
-                            ColorPickerPanelManager.shared.toggleColorPickerPanel()
+                            switch Defaults[.colorPickerDisplayMode] {
+                            case .panel:
+                                ColorPickerPanelManager.shared.toggleColorPickerPanel()
+                            case .popover:
+                                showColorPickerPopover.toggle()
+                            }
                         }) {
                             Capsule()
                                 .fill(.black)
@@ -108,6 +114,9 @@ struct DynamicIslandHeader: View {
                                 }
                         }
                         .buttonStyle(PlainButtonStyle())
+                        .popover(isPresented: $showColorPickerPopover, arrowEdge: .bottom) {
+                            ColorPickerPopover()
+                        }
                     }
                     
                     if Defaults[.settingsIconInNotch] {

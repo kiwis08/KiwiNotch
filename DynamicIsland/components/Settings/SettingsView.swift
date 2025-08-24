@@ -59,6 +59,9 @@ struct SettingsView: View {
                 NavigationLink(value: "Clipboard") {
                     Label("Clipboard", systemImage: "clipboard")
                 }
+                NavigationLink(value: "ColorPicker") {
+                    Label("Color Picker", systemImage: "eyedropper")
+                }
                 if extensionManager.installedExtensions
                     .contains(where: { $0.bundleIdentifier == downloadManagerExtension }) {
                     NavigationLink(value: "Downloads") {
@@ -102,6 +105,8 @@ struct SettingsView: View {
                     StatsSettings()
                 case "Clipboard":
                     ClipboardSettings()
+                case "ColorPicker":
+                    ColorPickerSettings()
                 case "Downloads":
                     Downloads()
                 case "Shelf":
@@ -1116,6 +1121,7 @@ struct Shortcuts: View {
     @Default(.enableClipboardManager) var enableClipboardManager
     @Default(.enableShortcuts) var enableShortcuts
     @Default(.enableStatsFeature) var enableStatsFeature
+    @Default(.enableColorPickerFeature) var enableColorPickerFeature
     
     var body: some View {
         Form {
@@ -1224,6 +1230,29 @@ struct Shortcuts: View {
                     Text("Stats")
                 } footer: {
                     Text("Opens the detailed system performance monitor panel. Default is Cmd+Shift+S. Only works when stats feature is enabled.")
+                        .multilineTextAlignment(.trailing)
+                        .foregroundStyle(.secondary)
+                        .font(.caption)
+                }
+                
+                Section {
+                    HStack {
+                        VStack(alignment: .leading) {
+                            KeyboardShortcuts.Recorder("Color Picker Panel:", name: .colorPickerPanel)
+                                .disabled(!enableShortcuts || !enableColorPickerFeature)
+                            if !enableColorPickerFeature {
+                                Text("Color Picker feature is disabled")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                    .padding(.top, 2)
+                            }
+                        }
+                        Spacer()
+                    }
+                } header: {
+                    Text("Color Picker")
+                } footer: {
+                    Text("Opens the color picker panel for screen color capture. Default is Cmd+Shift+P. Only works when color picker feature is enabled.")
                         .multilineTextAlignment(.trailing)
                         .foregroundStyle(.secondary)
                         .font(.caption)
@@ -1792,6 +1821,113 @@ struct ClipboardSettings: View {
             let days = Int(interval / 86400)
             return "\(days)d ago"
         }
+    }
+}
+
+struct ColorPickerSettings: View {
+    @ObservedObject var colorPickerManager = ColorPickerManager.shared
+    @Default(.enableColorPickerFeature) var enableColorPickerFeature
+    @Default(.showColorFormats) var showColorFormats
+    @Default(.colorPickerDisplayMode) var colorPickerDisplayMode
+    @Default(.colorHistorySize) var colorHistorySize
+    @Default(.showColorPickerIcon) var showColorPickerIcon
+    
+    var body: some View {
+        Form {
+            Section {
+                Defaults.Toggle("Enable Color Picker", key: .enableColorPickerFeature)
+            } header: {
+                Text("Color Picker")
+            } footer: {
+                Text("Enable screen color picking functionality. Use Cmd+Shift+P to quickly access the color picker.")
+            }
+            
+            if enableColorPickerFeature {
+                Section {
+                    Defaults.Toggle("Show Color Picker Icon", key: .showColorPickerIcon)
+                    
+                    HStack {
+                        Text("Display Mode")
+                        Spacer()
+                        Picker("Display Mode", selection: $colorPickerDisplayMode) {
+                            ForEach(ColorPickerDisplayMode.allCases, id: \.self) { mode in
+                                Text(mode.displayName).tag(mode)
+                            }
+                        }
+                        .pickerStyle(.menu)
+                        .frame(width: 100)
+                    }
+                    
+                    HStack {
+                        Text("History Size")
+                        Spacer()
+                        Picker("History Size", selection: $colorHistorySize) {
+                            Text("5 colors").tag(5)
+                            Text("10 colors").tag(10)
+                            Text("15 colors").tag(15)
+                            Text("20 colors").tag(20)
+                        }
+                        .pickerStyle(.menu)
+                        .frame(width: 100)
+                    }
+                    
+                    Defaults.Toggle("Show All Color Formats", key: .showColorFormats)
+                    
+                } header: {
+                    Text("Settings")
+                } footer: {
+                    switch colorPickerDisplayMode {
+                    case .popover:
+                        Text("Popover mode shows color picker as a dropdown attached to the color picker button. Panel mode shows color picker in a floating window.")
+                    case .panel:
+                        Text("Panel mode shows color picker in a floating window. Popover mode shows color picker as a dropdown attached to the color picker button.")
+                    }
+                }
+                
+                Section {
+                    HStack {
+                        Text("Color History")
+                        Spacer()
+                        Text("\(colorPickerManager.colorHistory.count)")
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    HStack {
+                        Text("Picking Status")
+                        Spacer()
+                        Text(colorPickerManager.isPickingColor ? "Active" : "Ready")
+                            .foregroundColor(colorPickerManager.isPickingColor ? .green : .secondary)
+                    }
+                    
+                    Button("Show Color Picker Panel") {
+                        ColorPickerPanelManager.shared.showColorPickerPanel()
+                    }
+                    .disabled(!enableColorPickerFeature)
+                    
+                } header: {
+                    Text("Status & Actions")
+                }
+                
+                Section {
+                    Button("Clear Color History") {
+                        colorPickerManager.clearHistory()
+                    }
+                    .foregroundColor(.red)
+                    .disabled(colorPickerManager.colorHistory.isEmpty)
+                    
+                    Button("Start Color Picking") {
+                        colorPickerManager.startColorPicking()
+                    }
+                    .disabled(!enableColorPickerFeature || colorPickerManager.isPickingColor)
+                    
+                } header: {
+                    Text("Quick Actions")
+                } footer: {
+                    Text("Clear color history removes all picked colors. Start color picking begins screen color capture mode.")
+                }
+            }
+        }
+        .navigationTitle("Color Picker")
     }
 }
 

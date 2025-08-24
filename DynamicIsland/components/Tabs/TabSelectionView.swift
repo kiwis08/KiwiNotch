@@ -22,29 +22,28 @@ struct TabSelectionView: View {
     @Default(.enableColorPickerFeature) var enableColorPickerFeature
     @Namespace var animation
     
-    var availableTabs: [TabModel] {
-        var tabs = [
-            TabModel(label: "Home", icon: "house.fill", view: .home),
-            TabModel(label: "Shelf", icon: "tray.fill", view: .shelf)
-        ]
+    private var tabs: [TabModel] {
+        var tabsArray: [TabModel] = []
         
-        if enableTimerFeature {
-            tabs.append(TabModel(label: "Timer", icon: "timer", view: .timer))
+        tabsArray.append(TabModel(label: "Home", icon: "house.fill", view: .home))
+        
+        tabsArray.append(TabModel(label: "Shelf", icon: "tray.fill", view: .shelf))
+        
+        // Timer tab only shown when timer feature is enabled
+        if Defaults[.enableTimerFeature] {
+            tabsArray.append(TabModel(label: "Timer", icon: "timer", view: .timer))
         }
         
-        if enableStatsFeature {
-            tabs.append(TabModel(label: "Stats", icon: "chart.line.uptrend.xyaxis", view: .stats))
+        // Stats tab only shown when stats feature is enabled
+        if Defaults[.enableStatsFeature] {
+            tabsArray.append(TabModel(label: "Stats", icon: "chart.xyaxis.line", view: .stats))
         }
         
-        if enableColorPickerFeature {
-            tabs.append(TabModel(label: "ColorPicker", icon: "eyedropper", view: .colorPicker))
-        }
-        
-        return tabs
+        return tabsArray
     }
     var body: some View {
         HStack(spacing: 0) {
-            ForEach(availableTabs) { tab in
+            ForEach(tabs) { tab in
                     TabButton(label: tab.label, icon: tab.icon, selected: coordinator.currentView == tab.view) {
                         withAnimation(.smooth) {
                             coordinator.currentView = tab.view
