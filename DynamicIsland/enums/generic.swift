@@ -29,6 +29,7 @@ public enum NotchViews {
     case shelf
     case timer
     case stats
+    case colorPicker
 }
 
 enum SettingsEnum {

@@ -471,6 +471,19 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             }
         }
         
+        KeyboardShortcuts.onKeyDown(for: .colorPickerPanel) { [weak self] in
+            guard let self = self else { return }
+            
+            // Only execute if shortcuts are enabled
+            guard Defaults[.enableShortcuts] else { return }
+            
+            // Only open color picker panel if the feature is enabled
+            guard Defaults[.enableColorPickerFeature] else { return }
+            
+            // Toggle color picker panel
+            ColorPickerPanelManager.shared.toggleColorPickerPanel()
+        }
+        
         KeyboardShortcuts.onKeyDown(for: .statsPanel) { [weak self] in
             guard let self = self else { return }
             

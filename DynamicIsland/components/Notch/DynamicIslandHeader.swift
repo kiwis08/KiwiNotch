@@ -16,6 +16,7 @@ struct DynamicIslandHeader: View {
     @ObservedObject var clipboardManager = ClipboardManager.shared
     @StateObject var tvm = TrayDrop.shared
     @State private var showClipboardPopover = false
+    @State private var showColorPickerPopover = false
     
     var body: some View {
         HStack(spacing: 0) {
@@ -85,9 +86,55 @@ struct DynamicIslandHeader: View {
                         .popover(isPresented: $showClipboardPopover, arrowEdge: .bottom) {
                             ClipboardPopover()
                         }
+                        .onChange(of: showClipboardPopover) { isActive in
+                            vm.isClipboardPopoverActive = isActive
+                            
+                            // If popover was closed, trigger a hover recheck
+                            if !isActive {
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                    vm.shouldRecheckHover.toggle()
+                                }
+                            }
+                        }
                         .onAppear {
                             if Defaults[.enableClipboardManager] && !clipboardManager.isMonitoring {
                                 clipboardManager.startMonitoring()
+                            }
+                        }
+                    }
+                    
+                    // ColorPicker button
+                    if Defaults[.enableColorPickerFeature] {
+                        Button(action: {
+                            switch Defaults[.colorPickerDisplayMode] {
+                            case .panel:
+                                ColorPickerPanelManager.shared.toggleColorPickerPanel()
+                            case .popover:
+                                showColorPickerPopover.toggle()
+                            }
+                        }) {
+                            Capsule()
+                                .fill(.black)
+                                .frame(width: 30, height: 30)
+                                .overlay {
+                                    Image(systemName: "eyedropper")
+                                        .foregroundColor(.white)
+                                        .padding()
+                                        .imageScale(.medium)
+                                }
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                        .popover(isPresented: $showColorPickerPopover, arrowEdge: .bottom) {
+                            ColorPickerPopover()
+                        }
+                        .onChange(of: showColorPickerPopover) { isActive in
+                            vm.isColorPickerPopoverActive = isActive
+                            
+                            // If popover was closed, trigger a hover recheck
+                            if !isActive {
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                    vm.shouldRecheckHover.toggle()
+                                }
                             }
                         }
                     }

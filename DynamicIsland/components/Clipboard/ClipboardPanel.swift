@@ -209,6 +209,9 @@ struct ClipboardPanelHeader: View {
         VStack(spacing: 8) {
             // Title and close button
             HStack {
+                // Close button
+                NativeStyleCloseButton(action: onClose)
+                
                 Image(systemName: "doc.on.clipboard")
                     .foregroundColor(.primary)
                     .font(.system(size: 16, weight: .medium))
@@ -234,13 +237,6 @@ struct ClipboardPanelHeader: View {
                 }
                 .buttonStyle(PlainButtonStyle())
                 .disabled(selectedTab == .history ? clipboardManager.clipboardHistory.isEmpty : clipboardManager.pinnedItems.isEmpty)
-                
-                Button(action: onClose) {
-                    Image(systemName: "xmark")
-                        .foregroundColor(.secondary)
-                        .font(.system(size: 12, weight: .medium))
-                }
-                .buttonStyle(PlainButtonStyle())
             }
             .padding(.horizontal, 16)
             .padding(.top, 12)
@@ -329,6 +325,7 @@ struct ClipboardPanelItemRow: View {
     let isPinned: Bool
     let onHover: (UUID?) -> Void
     @ObservedObject var clipboardManager = ClipboardManager.shared
+    @State private var justCopied = false
     
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
@@ -381,10 +378,20 @@ struct ClipboardPanelItemRow: View {
                     // Copy button
                     Button(action: {
                         clipboardManager.copyToClipboard(item)
+                        
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            justCopied = true
+                        }
+                        
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                justCopied = false
+                            }
+                        }
                     }) {
-                        Image(systemName: "doc.on.doc")
+                        Image(systemName: justCopied ? "checkmark.circle.fill" : "doc.on.doc")
                             .font(.system(size: 11))
-                            .foregroundColor(.green)
+                            .foregroundColor(justCopied ? .green : .green)
                     }
                     .buttonStyle(PlainButtonStyle())
                     
